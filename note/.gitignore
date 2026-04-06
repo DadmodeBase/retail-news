@@ -1,0 +1,8 @@
+token.json
+credentials.json
+.env
+.venv/
+__pycache__/
+*.mp3
+ideas/
+logs/

@@ -1,0 +1,25 @@
+{
+    "filters": {},
+    "rules": {
+        "preset-ja-technical-writing": {
+            "sentence-length": {
+                "max": 120
+            },
+            "no-exclamation-question-mark": false,
+            "ja-no-weak-phrase": false,
+            "ja-no-mixed-period": {
+                "allowPeriodMarks": [
+                    ":",
+                    "。"
+                ]
+            }
+        },
+        "preset-ja-spacing": {
+            "ja-space-between-half-and-full-width": {
+                "space": "never"
+            }
+        },
+        "no-mix-dearu-desumasu": true,
+        "ja-no-redundant-expression": true
+    }
+}
