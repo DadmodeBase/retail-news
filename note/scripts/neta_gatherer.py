@@ -288,7 +288,11 @@ def get_drive_service():
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             print("Googleトークンを更新しています...")
-            creds.refresh(Request())
+            try:
+                creds.refresh(Request())
+            except Exception as e:
+                print(f"トークンの更新に失敗しました（有効期限切れなど）: {e}")
+                creds = None
         else:
             # 環境変数またはファイルからcredentials情報を取得
             creds_json = os.getenv("GOOGLE_CREDENTIALS_JSON")
@@ -302,7 +306,7 @@ def get_drive_service():
             
             # GitHub Actions環境では新規に対話的認証はできない
             if os.getenv("GITHUB_ACTIONS") and not token_json:
-                raise Exception("GitHub Actions環境では有効な GOOGLE_TOKEN_JSON が必須です。")
+                raise Exception("GitHub Actions環境では有効な GOOGLE_TOKEN_JSON が必須です。ローカルで取得した最新のトークンを登録してください。")
             
             print("ブラウザを開いて認証を行います...")
             creds = flow.run_local_server(port=0)
@@ -433,7 +437,11 @@ def main():
         
         print("すべての工程が正常に終了しました。")
     except Exception as e:
+        import traceback
+        import sys
         print(f"エラーが発生しました: {e}")
+        traceback.print_exc()
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
