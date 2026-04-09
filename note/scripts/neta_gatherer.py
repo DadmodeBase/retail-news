@@ -28,6 +28,22 @@ EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
 EMAIL_RECEIVER = os.getenv("EMAIL_RECEIVER")
 DRIVE_FOLDER_ID = os.getenv("GOOGLE_DRIVE_FOLDER_ID")
 
+def validate_env():
+    """必要な環境変数が揃っているか確認する"""
+    required_vars = {
+        "GEMINI_API_KEY": GEMINI_API_KEY,
+        "EMAIL_SENDER": EMAIL_SENDER,
+        "EMAIL_PASSWORD": EMAIL_PASSWORD,
+        "EMAIL_RECEIVER": EMAIL_RECEIVER
+    }
+    missing = [k for k, v in required_vars.items() if not v]
+    if missing:
+        print(f"❌ 警告: 以下の環境変数が設定されていません: {', '.join(missing)}")
+    else:
+        print("✅ 基礎的な環境変数の読み込みを確認しました。")
+
+validate_env()
+
 # 定数
 TARGET_DIR = os.path.join(os.path.dirname(__file__), "..", "ideas")
 os.makedirs(TARGET_DIR, exist_ok=True)
@@ -277,8 +293,12 @@ def get_drive_service():
     # 1. 環境変数からのトークン取得を優先（GitHub Actions環境）
     token_json = os.getenv("GOOGLE_TOKEN_JSON")
     if token_json:
-        creds = Credentials.from_authorized_user_info(json.loads(token_json), scopes)
-        print("✅ Googleトークンを環境変数から読み込みました。")
+        try:
+            creds_data = json.loads(token_json)
+            creds = Credentials.from_authorized_user_info(creds_data, scopes)
+            print(f"✅ Googleトークンを環境変数から読み込みました。(Account: {creds_data.get('account', 'N/A')})")
+        except Exception as e:
+            print(f"❌ 警告: GOOGLE_TOKEN_JSON の解析に失敗しました: {e}")
     
     # 2. ローカルファイルからのトークン取得
     elif os.path.exists(token_path):

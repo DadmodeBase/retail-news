@@ -36,5 +36,6 @@ jobs:
           GITHUB_ACTIONS: "true"
           PYTHONIOENCODING: "utf-8"
           PYTHONUTF8: "1"
+        shell: bash
         run: |
           python scripts/neta_gatherer.py
