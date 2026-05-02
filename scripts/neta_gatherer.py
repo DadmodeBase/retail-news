@@ -368,13 +368,33 @@ def generate_header_image(date_str, output_path):
     main_text = "日刊 リテールニュース"
     
     try:
+        # シャドウの色
+        shadow_color = (0, 0, 0)
+        shadow_offset = 4
+        
+        # 日付の描画
         date_bbox = draw.textbbox((0, 0), date_text, font=font_date)
-        draw.text(((w - (date_bbox[2]-date_bbox[0]))/2, h/2 - 150), date_text, font=font_date, fill=(200, 230, 255))
+        date_x = (w - (date_bbox[2]-date_bbox[0]))/2
+        date_y = h/2 - 150
+        # 影を描画
+        draw.text((date_x + shadow_offset, date_y + shadow_offset), date_text, font=font_date, fill=shadow_color)
+        # 本体を描画
+        draw.text((date_x, date_y), date_text, font=font_date, fill=(255, 255, 255))
+        
+        # メインタイトルの描画
         main_bbox = draw.textbbox((0, 0), main_text, font=font_main)
-        draw.text(((w - (main_bbox[2]-main_bbox[0]))/2, h/2 - 20), main_text, font=font_main, fill=(255, 255, 255))
+        main_x = (w - (main_bbox[2]-main_bbox[0]))/2
+        main_y = h/2 - 20
+        # 影を描画
+        draw.text((main_x + shadow_offset, main_y + shadow_offset), main_text, font=font_main, fill=shadow_color)
+        # 本体を描画
+        draw.text((main_x, main_y), main_text, font=font_main, fill=(255, 255, 255))
     except:
-        draw.text((w/2-200, h/2-100), date_text, font=font_date, fill=(200, 230, 255))
-        draw.text((w/2-300, h/2), main_text, font=font_main, fill=(255, 255, 255))
+        # フォールバック時も簡易的な影を付ける
+        draw.text((w/2-198, h/2-98), date_text, font=font_date, fill=(0,0,0))
+        draw.text((w/2-200, h/2-100), date_text, font=font_date, fill=(255,255,255))
+        draw.text((w/2-298, h/2+2), main_text, font=font_main, fill=(0,0,0))
+        draw.text((w/2-300, h/2), main_text, font=font_main, fill=(255,255,255))
     
     img.save(output_path)
 
