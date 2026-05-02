@@ -8,7 +8,7 @@ import re
 import google.generativeai as genai
 from google.cloud import texttospeech
 from googleapiclient.discovery import build
-from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
+from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload, MediaIoBaseUpload
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -178,11 +178,10 @@ def save_history(folder_id, history_data):
         
         service = get_drive_service()
         file_metadata = {'name': HISTORY_FILENAME, 'parents': [folder_id]}
-        media_body = MediaFileUpload(
-            io.BytesIO(json.dumps(history_data, ensure_ascii=False).encode('utf-8')),
-            mimetype='application/json',
-            resumable=True
-        )
+        
+        # メモリ上のデータをアップロードするために MediaIoBaseUpload を使用
+        fh = io.BytesIO(json.dumps(history_data, ensure_ascii=False).encode('utf-8'))
+        media_body = MediaIoBaseUpload(fh, mimetype='application/json', resumable=True)
         
         # 既存ファイルの検索
         query = f"name = '{HISTORY_FILENAME}' and '{folder_id}' in parents and trashed = false"
@@ -385,7 +384,18 @@ def upload_to_drive(file_path, folder_id):
         service = get_drive_service()
         file_metadata = {"name": os.path.basename(file_path), "parents": [folder_id]}
         ext = os.path.splitext(file_path)[1].lower()
-        mimetype = "application/vnd.google-apps.document" if ext == '.md' else "image/png" if ext == '.png' else "audio/mpeg" if ext == '.mp3' else None
+        
+        # アップロードするファイル自体のMIMEタイプを指定
+        if ext == '.md':
+            mimetype = 'text/markdown'
+            # Googleドキュメント形式に変換したい場合は metadata に指定
+            file_metadata['mimeType'] = 'application/vnd.google-apps.document'
+        elif ext == '.png':
+            mimetype = 'image/png'
+        elif ext == '.mp3':
+            mimetype = 'audio/mpeg'
+        else:
+            mimetype = None
         
         media = MediaFileUpload(file_path, mimetype=mimetype, resumable=True)
         service.files().create(body=file_metadata, media_body=media, fields="id").execute()
@@ -449,37 +459,14 @@ def main():
         generate_header_image(date_str, header_path)
         generate_audio(outputs.get('audio_script', ''), mp3_path)
             
-        # 4. Googleドライブへアップロード
+        # 4. 履歴の更新と保存（重複排除のため）
         if DRIVE_FOLDER_ID:
             try:
-                # フォルダ作成・取得
-                service = get_drive_service()
-                query = f"name = '{date_str}' and '{DRIVE_FOLDER_ID}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
-                res = service.files().list(q=query, fields="files(id)").execute()
-                files = res.get('files', [])
-                
-                if files:
-                    daily_folder_id = files[0].get('id')
-                else:
-                    folder_metadata = {
-                        'name': date_str,
-                        'parents': [DRIVE_FOLDER_ID],
-                        'mimeType': 'application/vnd.google-apps.folder'
-                    }
-                    folder = service.files().create(body=folder_metadata, fields='id').execute()
-                    daily_folder_id = folder.get('id')
-                
-                upload_to_drive(md_ideas_path, daily_folder_id)
-                upload_to_drive(md_report_path, daily_folder_id)
-                upload_to_drive(header_path, daily_folder_id)
-                
-                # 履歴の更新と保存
                 new_titles = [a['title'] for a in articles]
                 history.extend(new_titles)
                 save_history(DRIVE_FOLDER_ID, history)
-                
             except Exception as e:
-                print(f"警告: ドライブ連携でエラーが発生しましたが継続します: {e}")
+                print(f"[警告] 履歴の保存に失敗しましたが継続します: {e}")
         
         # 5. メール送信
         send_email(f"【日刊】{outputs.get('article_title', date_str)} - {date_str}", "本日のレポートを添付します。", [md_ideas_path, md_report_path, header_path, mp3_path])
