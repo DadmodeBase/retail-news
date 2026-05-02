@@ -320,8 +320,10 @@ def generate_header_image(date_str, output_path):
     
     if os.path.exists(base_image_path):
         img = Image.open(base_image_path).convert("RGB")
+        # 指定サイズ (1920x1006) にリサイズ
+        img = img.resize((1920, 1006), Image.Resampling.LANCZOS)
     else:
-        # 高級感のあるグラデーション背景
+        # 高級感のあるグラデーション背景 (1920x1006)
         img = Image.new('RGB', (1920, 1006))
         draw = ImageDraw.Draw(img)
         for y in range(1006):
