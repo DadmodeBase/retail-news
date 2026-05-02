@@ -1,0 +1,29 @@
+# Node.js dependencies
+node_modules/
+**/node_modules/
+
+# Python cache and virtual environments
+__pycache__/
+*.pyc
+**/*.pyc
+.venv/
+**/.venv/
+
+# Environment variables and secrets
+.env
+**/.env
+*secret*.json
+speech-to-text-*.json
+credentials.json
+token.json
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Agent files
+.agents/
+skills-lock.json
+
+# Local data
+ideas/

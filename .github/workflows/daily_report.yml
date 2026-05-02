@@ -2,8 +2,8 @@ name: Daily Retail News Report
 
 on:
   schedule:
-    # 毎日JST朝7時（UTC 22:00）に実行
-    - cron: '0 22 * * *'
+    # 毎日JST朝5時（UTC 20:00）に実行
+    - cron: '0 20 * * *'
   workflow_dispatch: # 手動実行用ボタン
 
 jobs:
@@ -36,7 +36,6 @@ jobs:
           GITHUB_ACTIONS: "true"
           PYTHONIOENCODING: "utf-8"
           PYTHONUTF8: "1"
-
+        shell: bash
         run: |
           python scripts/neta_gatherer.py
-
