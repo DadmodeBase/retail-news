@@ -58,9 +58,9 @@ def validate_env():
     }
     missing = [k for k, v in required_vars.items() if not v]
     if missing:
-        print(f"❌ 警告: 以下の環境変数が設定されていません: {', '.join(missing)}")
+        print(f"[警告] 以下の環境変数が設定されていません: {', '.join(missing)}")
     else:
-        print("✅ 基礎的な環境変数の読み込みを確認しました。")
+        print("[OK] 基礎的な環境変数の読み込みを確認しました。")
 
 validate_env()
 
@@ -101,9 +101,9 @@ def get_drive_service():
         try:
             creds_data = json.loads(token_json)
             creds = Credentials.from_authorized_user_info(creds_data, scopes)
-            print("✅ Googleトークンを環境変数から読み込みました。")
+            print("[OK] Googleトークンを環境変数から読み込みました。")
         except Exception as e:
-            print(f"❌ 警告: GOOGLE_TOKEN_JSON の解析に失敗しました: {e}")
+            print(f"[NG] 警告: GOOGLE_TOKEN_JSON の解析に失敗しました: {e}")
     
     # 2. ローカルファイルからのトークン取得
     elif os.path.exists(token_path):
@@ -163,7 +163,7 @@ def load_history(folder_id):
             status, done = downloader.next_chunk()
         
         history_data = json.loads(fh.getvalue().decode('utf-8'))
-        print(f"✅ {len(history_data)} 件の履歴を読み込みました。")
+        print(f"[OK] {len(history_data)} 件の履歴を読み込みました。")
         return history_data
     except Exception as e:
         print(f"警告: 履歴の読み込みに失敗しました: {e}")
@@ -195,7 +195,7 @@ def save_history(folder_id, history_data):
         else:
             # 新規作成
             service.files().create(body=file_metadata, media_body=media_body).execute()
-        print("✅ 履歴の保存が完了しました。")
+        print("[OK] 履歴の保存が完了しました。")
     except Exception as e:
         print(f"警告: 履歴の保存に失敗しました: {e}")
 
@@ -387,9 +387,9 @@ def upload_to_drive(file_path, folder_id):
         
         media = MediaFileUpload(file_path, mimetype=mimetype, resumable=True)
         service.files().create(body=file_metadata, media_body=media, fields="id").execute()
-        print(f"✅ アップロード成功")
+        print(f"[OK] アップロード成功")
     except Exception as e:
-        print(f"❌ アップロード失敗: {e}")
+        print(f"[NG] アップロード失敗: {e}")
 
 def send_email(subject, body, attachment_paths):
     print("メールを送信しています...")
@@ -453,8 +453,19 @@ def main():
                 # フォルダ作成・取得
                 service = get_drive_service()
                 query = f"name = '{date_str}' and '{DRIVE_FOLDER_ID}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
-                res = service.files().list(q=query).execute()
-                daily_folder_id = res.get('files', [{}])[0].get('id') or service.files().create(body={'name': date_str, 'parents': [DRIVE_FOLDER_ID], 'mimeType': 'application/vnd.google-apps.folder'}).execute().get('id')
+                res = service.files().list(q=query, fields="files(id)").execute()
+                files = res.get('files', [])
+                
+                if files:
+                    daily_folder_id = files[0].get('id')
+                else:
+                    folder_metadata = {
+                        'name': date_str,
+                        'parents': [DRIVE_FOLDER_ID],
+                        'mimeType': 'application/vnd.google-apps.folder'
+                    }
+                    folder = service.files().create(body=folder_metadata, fields='id').execute()
+                    daily_folder_id = folder.get('id')
                 
                 upload_to_drive(md_ideas_path, daily_folder_id)
                 upload_to_drive(md_report_path, daily_folder_id)
