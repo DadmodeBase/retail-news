@@ -264,20 +264,22 @@ def generate_contents(articles):
 【ニュースソース】
 {context}
 
-【アウトプット1：デイリーレポート (Markdown)】
+【アウトプット1：デイリーレポート (note貼り付け用)】
 以下の構成で作成してください。合計1,800文字程度のボリュームにします。
-1. **内容の概要がわかる30文字程度のタイトル**
-2. **タイトル・日付**
-3. **【全体概要】**: 3つのトピックを俯瞰した、今日の潮流を読み解く導入文。
-4. **トピック別の詳細** (3セット):
-    - トピックの見出し（## レベル）
-    - 出典URL
-    - コラム形式の深い解説
+1. タイトル（1行目）：概要がわかる30文字程度のタイトル
+2. 空行
+3. 【全体概要】（■ を見出し記号として使用）：3つのトピックを俯瞰した導入文。
+4. 各トピック（3セット）：
+    - トピックタイトル（■ を見出し記号として使用。例：■ トピック名）
+    - ソースURL（「> 出典： URL」の形式で。Markdownのリンク形式 [ ]( ) は絶対に使わず、URLをそのまま生で記載してください）
+    - 本文：専門家としての深い解説コラム。
 
-【文体ルール】
-- です・ます調の対話体。
-- 句点（。）ごとに改行。
-- 重要なインサイトは太字。
+【文体ルール（重要）】
+- noteのエディタにそのまま貼り付けるため、Markdownの記法（# や ** や [ ]( )）は一切使わないでください。
+- 見出しには「■」を使ってください。
+- 強調したい言葉がある場合は、「 」や【 】を使って表現してください。
+- 句点（。）ごとに改行してください。
+- 2〜3文ごとに空行を入れてください。
 
 出力は以下のJSON形式でお願いします。
 {{
@@ -291,13 +293,12 @@ def generate_contents(articles):
     json_text = re.search(r'\{.*\}', response.text, re.DOTALL).group()
     data = json.loads(json_text)
     
-    # マークダウン修正
+    # note向け修正
     if 'daily_report' in data:
         report = data['daily_report']
-        report = re.sub(r'\s*\*\*\s*', '**', report)
-        report = re.sub(r'\*\*(.*?)\*\*', r' **\1** ', report)
-        if 'article_title' in data:
-            report = f"# {data['article_title']}\n\n" + report
+        # タイトルが本文に含まれていない場合は追加
+        if 'article_title' in data and data['article_title'] not in report:
+            report = f"{data['article_title']}\n\n" + report
         data['daily_report'] = report
         
     return data
