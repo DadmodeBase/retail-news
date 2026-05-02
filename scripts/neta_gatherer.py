@@ -368,9 +368,12 @@ def generate_header_image(date_str, output_path):
     main_text = "日刊 リテールニュース"
     
     try:
-        # シャドウの色
-        shadow_color = (0, 0, 0)
+        # シャドウの色（濃い焦げ茶）
+        shadow_color = (40, 30, 0)
         shadow_offset = 4
+        
+        # 文字色（目立つゴールド）
+        text_color = (180, 140, 30)
         
         # 日付の描画
         date_bbox = draw.textbbox((0, 0), date_text, font=font_date)
@@ -379,7 +382,7 @@ def generate_header_image(date_str, output_path):
         # 影を描画
         draw.text((date_x + shadow_offset, date_y + shadow_offset), date_text, font=font_date, fill=shadow_color)
         # 本体を描画
-        draw.text((date_x, date_y), date_text, font=font_date, fill=(255, 255, 255))
+        draw.text((date_x, date_y), date_text, font=font_date, fill=text_color)
         
         # メインタイトルの描画
         main_bbox = draw.textbbox((0, 0), main_text, font=font_main)
@@ -388,13 +391,13 @@ def generate_header_image(date_str, output_path):
         # 影を描画
         draw.text((main_x + shadow_offset, main_y + shadow_offset), main_text, font=font_main, fill=shadow_color)
         # 本体を描画
-        draw.text((main_x, main_y), main_text, font=font_main, fill=(255, 255, 255))
+        draw.text((main_x, main_y), main_text, font=font_main, fill=text_color)
     except:
-        # フォールバック時も簡易的な影を付ける
-        draw.text((w/2-198, h/2-98), date_text, font=font_date, fill=(0,0,0))
-        draw.text((w/2-200, h/2-100), date_text, font=font_date, fill=(255,255,255))
-        draw.text((w/2-298, h/2+2), main_text, font=font_main, fill=(0,0,0))
-        draw.text((w/2-300, h/2), main_text, font=font_main, fill=(255,255,255))
+        # フォールバック時
+        draw.text((w/2-198, h/2-98), date_text, font=font_date, fill=(40,30,0))
+        draw.text((w/2-200, h/2-100), date_text, font=font_date, fill=(180,140,30))
+        draw.text((w/2-298, h/2+2), main_text, font=font_main, fill=(40,30,0))
+        draw.text((w/2-300, h/2), main_text, font=font_main, fill=(180,140,30))
     
     img.save(output_path)
 
