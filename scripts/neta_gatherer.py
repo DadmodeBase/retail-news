@@ -20,6 +20,7 @@ from dotenv import load_dotenv
 from PIL import Image, ImageDraw, ImageFont
 import io
 import shutil
+import calendar
 
 # 日本標準時 (JST)
 JST = datetime.timezone(datetime.timedelta(hours=9))
@@ -205,10 +206,9 @@ def save_history(folder_id, history_data):
 def fetch_latest_news(history):
     print("ニュースを収集しています...")
     articles = []
-    # 過去2日分の記事を対象にする（時差考慮）
+    # 連休等で更新がない場合を考慮し、過去3日分（今日を含め4日分）の記事を対象にする
     now_jst = datetime.datetime.now(JST)
-    target_date_1 = now_jst.date()
-    target_date_2 = (now_jst - datetime.timedelta(days=1)).date()
+    target_dates = [(now_jst - datetime.timedelta(days=i)).date() for i in range(4)]
     
     seen_titles = set(history)
     
@@ -224,8 +224,12 @@ def fetch_latest_news(history):
                 entry_time = entry.get('published_parsed') or entry.get('updated_parsed')
                 if entry_time:
                     try:
-                        dt = datetime.datetime.fromtimestamp(time.mktime(entry_time))
-                        if dt.date() in [target_date_1, target_date_2]:
+                        # feedparserの時間はUTCなので、正しくJSTに変換する
+                        epoch = calendar.timegm(entry_time)
+                        dt_utc = datetime.datetime.fromtimestamp(epoch, tz=datetime.timezone.utc)
+                        dt_jst = dt_utc.astimezone(JST)
+                        
+                        if dt_jst.date() in target_dates:
                             articles.append({
                                 "title": entry.title,
                                 "link": entry.link,
