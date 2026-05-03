@@ -19,6 +19,10 @@ from email.mime.application import MIMEApplication
 from dotenv import load_dotenv
 from PIL import Image, ImageDraw, ImageFont
 import io
+import shutil
+
+# 日本標準時 (JST)
+JST = datetime.timezone(datetime.timedelta(hours=9))
 
 # .envファイルの読み込み
 # ルート直下または note/ 直下の .env を探す
@@ -202,8 +206,9 @@ def fetch_latest_news(history):
     print("ニュースを収集しています...")
     articles = []
     # 過去2日分の記事を対象にする（時差考慮）
-    target_date_1 = (datetime.datetime.now() - datetime.timedelta(days=0)).date()
-    target_date_2 = (datetime.datetime.now() - datetime.timedelta(days=1)).date()
+    now_jst = datetime.datetime.now(JST)
+    target_date_1 = now_jst.date()
+    target_date_2 = (now_jst - datetime.timedelta(days=1)).date()
     
     seen_titles = set(history)
     
@@ -266,18 +271,22 @@ def generate_contents(articles):
 
 【アウトプット1：デイリーレポート (note貼り付け用)】
 以下の構成で作成してください。合計1,800文字程度のボリュームにします。
-1. タイトル（1行目）：概要がわかる30文字程度のタイトル
+1. タイトル（1行目）：概要がわかる30文字程度のタイトル（Markdownの記号は使わず、そのまま文字で）
 2. 空行
-3. 【全体概要】（■ を見出し記号として使用）：3つのトピックを俯瞰した導入文。
+3. 全体概要（## を見出しとして使用）：3つのトピックを俯瞰した導入文。
 4. 各トピック（3セット）：
-    - トピックタイトル（■ を見出し記号として使用。例：■ トピック名）
+    - トピックタイトル（## を見出しとして使用。例：## トピック名）
     - ソースURL（「> 出典： URL」の形式で。Markdownのリンク形式 [ ]( ) は絶対に使わず、URLをそのまま生で記載してください）
     - 本文：専門家としての深い解説コラム。
 
 【文体ルール（重要）】
-- noteのエディタにそのまま貼り付けるため、Markdownの記法（# や ** や [ ]( )）は一切使わないでください。
-- 見出しには「■」を使ってください。
-- 強調したい言葉がある場合は、「 」や【 】を使って表現してください。
+- noteのエディタにプレーンテキストとして貼り付けたときにMarkdownが自動変換される形式で書いてください。
+- 見出しには「## 」を使ってください（「##」の後に必ず半角スペースを1つ入れること）。
+- 強調したい言葉には「**太字**」を使ってください。
+- 箇条書きには「- 」を使ってください。
+- 引用には「> 」を使ってください。
+- ただし、リンクにMarkdown記法 [ ]( ) は使わないでください。URLはそのまま生で記載してください。
+- テーブル記法は使わないでください（noteでは変換されません）。
 - 句点（。）ごとに改行してください。
 - 2〜3文ごとに空行を入れてください。
 
@@ -315,7 +324,26 @@ def generate_audio(text, output_path):
         out.write(response.audio_content)
 
 def generate_header_image(date_str, output_path):
-    print(f"ヘッダー画像を生成しています: {output_path}")
+    """
+    ヘッダー画像を生成または取得する。
+    resources/headers/{MM-DD}.png が存在すればそれを使用し、
+    なければ従来のPILによる生成を行う。
+    """
+    print(f"ヘッダー画像を準備しています: {output_path}")
+    
+    # date_str (YYYY-MM-DD) から MM-DD を抽出
+    try:
+        mm_dd = date_str[5:10] # "05-03"
+        custom_header_path = os.path.join(os.path.dirname(__file__), "..", "resources", "headers", f"{mm_dd}.png")
+        
+        if os.path.exists(custom_header_path):
+            print(f"Canva製ヘッダー画像が見つかりました: {custom_header_path}")
+            shutil.copy(custom_header_path, output_path)
+            return
+    except Exception as e:
+        print(f"Canva画像の確認中にエラーが発生しました（フォールバックします）: {e}")
+
+    # --- 以下、従来のフォールバック生成ロジック ---
     base_image_path = os.path.join(os.path.dirname(__file__), "..", "resources", "header_base.png")
     
     if os.path.exists(base_image_path):
@@ -348,8 +376,8 @@ def generate_header_image(date_str, output_path):
         try:
             print("日本語フォントをダウンロードします...")
             font_url = "https://github.com/google/fonts/raw/main/ofl/notosansjp/NotoSansJP-SemiBold.ttf"
-            urllib_request = __import__('urllib.request').request
-            urllib_request.urlretrieve(font_url, fallback_font_path)
+            import urllib.request
+            urllib.request.urlretrieve(font_url, fallback_font_path)
         except: pass
     
     font_paths.insert(0, fallback_font_path)
@@ -452,7 +480,7 @@ def send_email(subject, body, attachment_paths):
 
 def main():
     try:
-        date_str = datetime.datetime.now().strftime("%Y-%m-%d")
+        date_str = datetime.datetime.now(JST).strftime("%Y-%m-%d")
         
         # 0. 履歴の読み込み
         history = []
