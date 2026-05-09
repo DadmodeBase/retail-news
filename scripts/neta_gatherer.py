@@ -1,14 +1,11 @@
 import os
 import json
 import datetime
-import time
-import requests
 import feedparser
 import re
 import google.generativeai as genai
-from google.cloud import texttospeech
 from googleapiclient.discovery import build
-from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload, MediaIoBaseUpload
+from googleapiclient.http import MediaIoBaseDownload, MediaIoBaseUpload
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -17,24 +14,27 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
 from dotenv import load_dotenv
-from PIL import Image, ImageDraw, ImageFont
 import io
 import shutil
-import calendar
 
 # 日本標準時 (JST)
 JST = datetime.timezone(datetime.timedelta(hours=9))
 
+# プロジェクトルート & パス探索ヘルパー
+PROJECT_ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
+
+def find_file(filename, subdirs=("", "note")):
+    """PROJECT_ROOT 配下の複数ディレクトリからファイルを探す"""
+    for sub in subdirs:
+        path = os.path.join(PROJECT_ROOT, sub, filename)
+        if os.path.exists(path):
+            return path
+    return os.path.join(PROJECT_ROOT, filename)
+
 # .envファイルの読み込み
-# ルート直下または note/ 直下の .env を探す
-env_paths = [
-    os.path.join(os.path.dirname(__file__), "..", ".env"),
-    os.path.join(os.path.dirname(__file__), "..", "note", ".env")
-]
-for p in env_paths:
-    if os.path.exists(p):
-        load_dotenv(dotenv_path=p)
-        break
+env_path = find_file(".env")
+if os.path.exists(env_path):
+    load_dotenv(dotenv_path=env_path)
 
 # 設定の取得
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -44,12 +44,14 @@ EMAIL_RECEIVER = os.getenv("EMAIL_RECEIVER")
 DRIVE_FOLDER_ID = os.getenv("GOOGLE_DRIVE_FOLDER_ID")
 
 # 定数
-TARGET_DIR = os.path.join(os.path.dirname(__file__), "..", "ideas")
+TARGET_DIR = os.path.join(PROJECT_ROOT, "ideas")
 os.makedirs(TARGET_DIR, exist_ok=True)
 RSS_FEEDS = [
     "https://lnews.jp/feed",
     "https://www.ryutsuu.biz/feed",
-    "https://prtimes.jp/main/html/searchrlp/kw/%E3%83%AA%E3%83%86%E3%83%BC%E3%83%ABDX"
+    "https://prtimes.jp/main/html/searchrlp/kw/%E3%83%AA%E3%83%86%E3%83%BC%E3%83%ABDX",
+    "https://diamond-rm.net/feed/",
+    "https://news.google.com/rss/search?q=%E5%B0%8F%E5%A3%B2+OR+%E6%B5%81%E9%80%9A+OR+%E5%BA%97%E8%88%97DX&hl=ja&gl=JP&ceid=JP:ja"
 ]
 HISTORY_FILENAME = "processed_history.json"
 
@@ -69,35 +71,12 @@ def validate_env():
 
 validate_env()
 
-# --- クラウド実行（GitHub Actions）用の認証設定 ---
-def setup_cloud_auth():
-    """環境変数から認証ファイルを一時的に復元する"""
-    gcp_json = os.getenv("GCP_SERVICE_ACCOUNT_JSON")
-    if gcp_json:
-        gcp_key_path = os.path.join(TARGET_DIR, "gcp_key.json")
-        with open(gcp_key_path, "w", encoding="utf-8") as f:
-            f.write(gcp_json)
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = gcp_key_path
-        print("Cloud TTS credentials successfully loaded from environment variable.")
-
-setup_cloud_auth()
 
 def get_drive_service():
     """Google Drive API サービスを取得。ローカルファイルと環境変数の両方に対応。"""
     creds = None
-    # 複数のパスを試す
-    token_locations = [
-        os.path.join(os.path.dirname(__file__), "..", "token.json"),
-        os.path.join(os.path.dirname(__file__), "..", "note", "token.json")
-    ]
-    credentials_locations = [
-        os.path.join(os.path.dirname(__file__), "..", "credentials.json"),
-        os.path.join(os.path.dirname(__file__), "..", "note", "credentials.json")
-    ]
-    
-    token_path = next((p for p in token_locations if os.path.exists(p)), token_locations[0])
-    credentials_path = next((p for p in credentials_locations if os.path.exists(p)), credentials_locations[0])
-    
+    token_path = find_file("token.json")
+    credentials_path = find_file("credentials.json")
     scopes = ["https://www.googleapis.com/auth/drive.file"]
 
     # 1. 環境変数からのトークン取得を優先（GitHub Actions環境）
@@ -146,18 +125,17 @@ def get_drive_service():
             
     return build("drive", "v3", credentials=creds)
 
-def load_history(folder_id):
-    """Googleドライブから履歴ファイルを読み込む"""
+def load_history(service, folder_id):
+    """Googleドライブから履歴ファイルを読み込む。データとfile_idのタプルを返す。"""
     print("過去の記事履歴を読み込んでいます...")
     try:
-        service = get_drive_service()
         query = f"name = '{HISTORY_FILENAME}' and '{folder_id}' in parents and trashed = false"
         results = service.files().list(q=query, fields="files(id, name)").execute()
         files = results.get('files', [])
         
         if not files:
             print("履歴ファイルが見つかりません。新規作成します。")
-            return []
+            return [], None
             
         file_id = files[0]['id']
         request = service.files().get_media(fileId=file_id)
@@ -169,33 +147,27 @@ def load_history(folder_id):
         
         history_data = json.loads(fh.getvalue().decode('utf-8'))
         print(f"[OK] {len(history_data)} 件の履歴を読み込みました。")
-        return history_data
+        return history_data, file_id
     except Exception as e:
         print(f"警告: 履歴の読み込みに失敗しました: {e}")
-        return []
+        return [], None
 
-def save_history(folder_id, history_data):
+def save_history(service, folder_id, history_data, file_id):
     """履歴ファイルをGoogleドライブに保存（上書きまたは新規作成）"""
     print(f"記事履歴を保存しています ({len(history_data)} 件)...")
     try:
         # 最新の500件に制限
         history_data = history_data[-500:]
         
-        service = get_drive_service()
         file_metadata = {'name': HISTORY_FILENAME, 'parents': [folder_id]}
         
         # メモリ上のデータをアップロードするために MediaIoBaseUpload を使用
         fh = io.BytesIO(json.dumps(history_data, ensure_ascii=False).encode('utf-8'))
         media_body = MediaIoBaseUpload(fh, mimetype='application/json', resumable=True)
         
-        # 既存ファイルの検索
-        query = f"name = '{HISTORY_FILENAME}' and '{folder_id}' in parents and trashed = false"
-        results = service.files().list(q=query, fields="files(id)").execute()
-        files = results.get('files', [])
-        
-        if files:
+        if file_id:
             # 上書き
-            service.files().update(fileId=files[0]['id'], media_body=media_body).execute()
+            service.files().update(fileId=file_id, media_body=media_body).execute()
         else:
             # 新規作成
             service.files().create(body=file_metadata, media_body=media_body).execute()
@@ -203,12 +175,11 @@ def save_history(folder_id, history_data):
     except Exception as e:
         print(f"警告: 履歴の保存に失敗しました: {e}")
 
-def fetch_latest_news(history):
+def fetch_latest_news(history, now_jst):
     print("ニュースを収集しています...")
     articles = []
-    # 連休等で更新がない場合を考慮し、過去3日分（今日を含め4日分）の記事を対象にする
-    now_jst = datetime.datetime.now(JST)
-    target_dates = [(now_jst - datetime.timedelta(days=i)).date() for i in range(4)]
+    # 前日の記事のみを対象にする
+    target_date = (now_jst - datetime.timedelta(days=1)).date()
     
     seen_titles = set(history)
     
@@ -225,11 +196,10 @@ def fetch_latest_news(history):
                 if entry_time:
                     try:
                         # feedparserの時間はUTCなので、正しくJSTに変換する
-                        epoch = calendar.timegm(entry_time)
-                        dt_utc = datetime.datetime.fromtimestamp(epoch, tz=datetime.timezone.utc)
+                        dt_utc = datetime.datetime(*entry_time[:6], tzinfo=datetime.timezone.utc)
                         dt_jst = dt_utc.astimezone(JST)
                         
-                        if dt_jst.date() in target_dates:
+                        if dt_jst.date() == target_date:
                             articles.append({
                                 "title": entry.title,
                                 "link": entry.link,
@@ -237,8 +207,8 @@ def fetch_latest_news(history):
                             })
                             seen_titles.add(entry.title)
                             count += 1
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        print(f"警告: 記事の日付パースに失敗しました: {e}")
                 
                 if count >= 10:
                     break
@@ -248,19 +218,12 @@ def fetch_latest_news(history):
     print(f"新規記事を {len(articles)} 件取得しました。")
     return articles
 
-def clean_text_for_tts(text):
-    text = re.sub(r'#+\s*', '', text)
-    text = re.sub(r'\*+', '', text)
-    text = re.sub(r'---+', '', text)
-    text = re.sub(r'\[(.*?)\]\(.*?\)', r'\1', text)
-    text = re.sub(r'-\s*', '', text)
-    return text
 
 def generate_contents(articles):
     if not articles:
         return None
     
-    print("Geminiでレポートと音声を生成しています...")
+    print("Geminiでレポートを生成しています...")
     genai.configure(api_key=GEMINI_API_KEY)
     model = genai.GenerativeModel('gemini-flash-latest')
     
@@ -268,29 +231,26 @@ def generate_contents(articles):
     
     prompt = f"""
 あなたはフィールドマーケティングの専門家です。以下の最新ニュースから3つのトピックスを選び、
-デイリーレポートと音声読み上げ用原稿を作成してください。
+デイリーレポートを作成してください。
 
 【ニュースソース】
 {context}
 
 【アウトプット1：デイリーレポート (note貼り付け用)】
 以下の構成で作成してください。合計1,800文字程度のボリュームにします。
-1. タイトル（1行目）：概要がわかる30文字程度のタイトル（Markdownの記号は使わず、そのまま文字で）
+1. タイトル（1行目）：概要がわかる30文字程度のタイトル（記号は使わず、そのまま文字で）
 2. 空行
-3. 全体概要（## を見出しとして使用）：3つのトピックを俯瞰した導入文。
+3. 全体概要：3つのトピックを俯瞰した導入文。
 4. 各トピック（3セット）：
-    - トピックタイトル（## を見出しとして使用。例：## トピック名）
-    - ソースURL（「> 出典： URL」の形式で。Markdownのリンク形式 [ ]( ) は絶対に使わず、URLをそのまま生で記載してください）
+    - トピックタイトル（独立した行として記載。記号は使わない）
+    - ソースURL（URLのみをそのまま生で記載してください。出典などの文字や記号は一切不要です）
     - 本文：専門家としての深い解説コラム。
 
 【文体ルール（重要）】
-- noteのエディタにプレーンテキストとして貼り付けたときにMarkdownが自動変換される形式で書いてください。
-- 見出しには「## 」を使ってください（「##」の後に必ず半角スペースを1つ入れること）。
-- 強調したい言葉には「**太字**」を使ってください。
-- 箇条書きには「- 」を使ってください。
-- 引用には「> 」を使ってください。
-- ただし、リンクにMarkdown記法 [ ]( ) は使わないでください。URLはそのまま生で記載してください。
-- テーブル記法は使わないでください（noteでは変換されません）。
+- Markdown記法（##, **, >, - など）は絶対に、一切使わないでください。
+- すべてプレーンテキスト形式で書いてください。
+- 見出しや強調に記号を使わず、文章の内容と構成のみで読みやすさを確保してください。
+- リンクにMarkdown記法 [ ]( ) は使わず、URLをそのまま生で記載してください。
 - 句点（。）ごとに改行してください。
 - 2〜3文ごとに空行を入れてください。
 
@@ -298,13 +258,11 @@ def generate_contents(articles):
 {{
   "article_title": "タイトル",
   "daily_report": "レポート全文",
-  "audio_script": "読み上げ用テキスト",
   "ideas_summary": "構造化されたネタ帳"
 }}
 """
-    response = model.generate_content(prompt)
-    json_text = re.search(r'\{.*\}', response.text, re.DOTALL).group()
-    data = json.loads(json_text)
+    response = model.generate_content(prompt, generation_config={"response_mime_type": "application/json"})
+    data = json.loads(response.text)
     
     # note向け修正
     if 'daily_report' in data:
@@ -316,148 +274,22 @@ def generate_contents(articles):
         
     return data
 
-def generate_audio(text, output_path):
-    print("Google Cloud TTSで音声を生成しています...")
-    client = texttospeech.TextToSpeechClient()
-    clean_text = clean_text_for_tts(text)
-    synthesis_input = texttospeech.SynthesisInput(text=clean_text)
-    voice = texttospeech.VoiceSelectionParams(language_code="ja-JP", name="ja-JP-Neural2-C")
-    audio_config = texttospeech.AudioConfig(audio_encoding=texttospeech.AudioEncoding.MP3)
-    response = client.synthesize_speech(input=synthesis_input, voice=voice, audio_config=audio_config)
-    with open(output_path, "wb") as out:
-        out.write(response.audio_content)
 
-def generate_header_image(date_str, output_path):
+def get_header_image(date_str, output_path):
     """
-    ヘッダー画像を生成または取得する。
-    resources/headers/{MM-DD}.png が存在すればそれを使用し、
-    なければ従来のPILによる生成を行う。
+    Canva製ヘッダー画像を取得する。
+    resources/headers/{MM-DD}.png が存在すればコピーし、なければ None を返す。
     """
-    print(f"ヘッダー画像を準備しています: {output_path}")
+    mm_dd = date_str[5:10]
+    custom_header_path = os.path.join(PROJECT_ROOT, "resources", "headers", f"{mm_dd}.png")
     
-    # date_str (YYYY-MM-DD) から MM-DD を抽出
-    try:
-        mm_dd = date_str[5:10] # "05-03"
-        custom_header_path = os.path.join(os.path.dirname(__file__), "..", "resources", "headers", f"{mm_dd}.png")
-        
-        if os.path.exists(custom_header_path):
-            print(f"Canva製ヘッダー画像が見つかりました: {custom_header_path}")
-            shutil.copy(custom_header_path, output_path)
-            return
-    except Exception as e:
-        print(f"Canva画像の確認中にエラーが発生しました（フォールバックします）: {e}")
-
-    # --- 以下、従来のフォールバック生成ロジック ---
-    base_image_path = os.path.join(os.path.dirname(__file__), "..", "resources", "header_base.png")
+    if os.path.exists(custom_header_path):
+        print(f"[OK] ヘッダー画像を取得しました: {mm_dd}.png")
+        shutil.copy(custom_header_path, output_path)
+        return output_path
     
-    if os.path.exists(base_image_path):
-        img = Image.open(base_image_path).convert("RGB")
-        # 指定サイズ (1920x1006) にリサイズ
-        img = img.resize((1920, 1006), Image.Resampling.LANCZOS)
-    else:
-        # 高級感のあるグラデーション背景 (1920x1006)
-        img = Image.new('RGB', (1920, 1006))
-        draw = ImageDraw.Draw(img)
-        for y in range(1006):
-            r = int(15 + (40 - 15) * (y / 1006))
-            g = int(35 + (80 - 35) * (y / 1006))
-            b = int(75 + (130 - 75) * (y / 1006))
-            draw.line([(0, y), (1920, y)], fill=(r, g, b))
-
-    draw = ImageDraw.Draw(img)
-    w, h = img.size
-    
-    # フォント設定
-    font_paths = [
-        "C:\\Windows\\Fonts\\meiryo.ttc",
-        "C:\\Windows\\Fonts\\msgothic.ttc",
-        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc"
-    ]
-    
-    # 日本語フォントが無い場合はダウンロード
-    fallback_font_path = os.path.join(TARGET_DIR, "NotoSansJP-SemiBold.ttf")
-    if not any(os.path.exists(f) for f in font_paths) and not os.path.exists(fallback_font_path):
-        try:
-            print("日本語フォントをダウンロードします...")
-            font_url = "https://github.com/google/fonts/raw/main/ofl/notosansjp/NotoSansJP-SemiBold.ttf"
-            import urllib.request
-            urllib.request.urlretrieve(font_url, fallback_font_path)
-        except: pass
-    
-    font_paths.insert(0, fallback_font_path)
-    font_main, font_date = None, None
-    for p in font_paths:
-        if os.path.exists(p):
-            try:
-                font_main = ImageFont.truetype(p, 120)
-                font_date = ImageFont.truetype(p, 80)
-                break
-            except: pass
-
-    if not font_main:
-        font_main = font_date = ImageFont.load_default()
-    
-    date_text = date_str.split("-")[-2].lstrip("0") + "月" + date_str.split("-")[-1].lstrip("0") + "日"
-    main_text = "日刊 リテールニュース"
-    
-    try:
-        # シャドウの色（濃い焦げ茶）
-        shadow_color = (40, 30, 0)
-        shadow_offset = 4
-        
-        # 文字色（目立つゴールド）
-        text_color = (180, 140, 30)
-        
-        # 日付の描画
-        date_bbox = draw.textbbox((0, 0), date_text, font=font_date)
-        date_x = (w - (date_bbox[2]-date_bbox[0]))/2
-        date_y = h/2 - 150
-        # 影を描画
-        draw.text((date_x + shadow_offset, date_y + shadow_offset), date_text, font=font_date, fill=shadow_color)
-        # 本体を描画
-        draw.text((date_x, date_y), date_text, font=font_date, fill=text_color)
-        
-        # メインタイトルの描画
-        main_bbox = draw.textbbox((0, 0), main_text, font=font_main)
-        main_x = (w - (main_bbox[2]-main_bbox[0]))/2
-        main_y = h/2 - 20
-        # 影を描画
-        draw.text((main_x + shadow_offset, main_y + shadow_offset), main_text, font=font_main, fill=shadow_color)
-        # 本体を描画
-        draw.text((main_x, main_y), main_text, font=font_main, fill=text_color)
-    except:
-        # フォールバック時
-        draw.text((w/2-198, h/2-98), date_text, font=font_date, fill=(40,30,0))
-        draw.text((w/2-200, h/2-100), date_text, font=font_date, fill=(180,140,30))
-        draw.text((w/2-298, h/2+2), main_text, font=font_main, fill=(40,30,0))
-        draw.text((w/2-300, h/2), main_text, font=font_main, fill=(180,140,30))
-    
-    img.save(output_path)
-
-def upload_to_drive(file_path, folder_id):
-    print(f"Googleドライブへアップロードしています: {os.path.basename(file_path)}")
-    try:
-        service = get_drive_service()
-        file_metadata = {"name": os.path.basename(file_path), "parents": [folder_id]}
-        ext = os.path.splitext(file_path)[1].lower()
-        
-        # アップロードするファイル自体のMIMEタイプを指定
-        if ext == '.md':
-            mimetype = 'text/markdown'
-            # Googleドキュメント形式に変換したい場合は metadata に指定
-            file_metadata['mimeType'] = 'application/vnd.google-apps.document'
-        elif ext == '.png':
-            mimetype = 'image/png'
-        elif ext == '.mp3':
-            mimetype = 'audio/mpeg'
-        else:
-            mimetype = None
-        
-        media = MediaFileUpload(file_path, mimetype=mimetype, resumable=True)
-        service.files().create(body=file_metadata, media_body=media, fields="id").execute()
-        print(f"[OK] アップロード成功")
-    except Exception as e:
-        print(f"[NG] アップロード失敗: {e}")
+    print(f"[警告] ヘッダー画像が見つかりません: {mm_dd}.png（画像なしで続行します）")
+    return None
 
 def send_email(subject, body, attachment_paths):
     print("メールを送信しています...")
@@ -465,34 +297,29 @@ def send_email(subject, body, attachment_paths):
     msg['From'], msg['To'], msg['Subject'] = EMAIL_SENDER, EMAIL_RECEIVER, subject
     msg.attach(MIMEText(body, 'plain'))
     for path in attachment_paths:
-        ext = os.path.splitext(path)[1].lower()
         with open(path, "rb") as f:
-            file_data = f.read()
-            if ext == '.png':
-                from email.mime.image import MIMEImage
-                part = MIMEImage(file_data, name=os.path.basename(path))
-            elif ext == '.mp3':
-                from email.mime.audio import MIMEAudio
-                part = MIMEAudio(file_data, _subtype='mpeg')
-            else:
-                part = MIMEApplication(file_data, Name=os.path.basename(path))
-            part.add_header('Content-Disposition', 'attachment', filename=os.path.basename(path))
-            msg.attach(part)
+            part = MIMEApplication(f.read(), Name=os.path.basename(path))
+        part.add_header('Content-Disposition', 'attachment', filename=os.path.basename(path))
+        msg.attach(part)
     with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
         server.login(EMAIL_SENDER, EMAIL_PASSWORD)
         server.send_message(msg)
 
 def main():
     try:
-        date_str = datetime.datetime.now(JST).strftime("%Y-%m-%d")
+        now_jst = datetime.datetime.now(JST)
+        date_str = now_jst.strftime("%Y-%m-%d")
         
-        # 0. 履歴の読み込み
+        # 0. Drive サービスの初期化 & 履歴の読み込み
+        service = None
         history = []
+        file_id = None
         if DRIVE_FOLDER_ID:
-            history = load_history(DRIVE_FOLDER_ID)
+            service = get_drive_service()
+            history, file_id = load_history(service, DRIVE_FOLDER_ID)
             
         # 1. ニュース収集
-        articles = fetch_latest_news(history)
+        articles = fetch_latest_news(history, now_jst)
         if not articles:
             print("新しい記事がないため、本日の処理を終了します。")
             return
@@ -505,27 +332,28 @@ def main():
         md_ideas_path = os.path.join(TARGET_DIR, f"{date_str}-ideas.md")
         md_report_path = os.path.join(TARGET_DIR, f"{date_str}-daily-report.md")
         header_path = os.path.join(TARGET_DIR, f"{date_str}-header.png")
-        mp3_path = os.path.join(TARGET_DIR, f"{date_str}.mp3")
 
         with open(md_ideas_path, "w", encoding="utf-8") as f:
             f.write(json.dumps(outputs.get('ideas_summary', ''), ensure_ascii=False, indent=2))
         with open(md_report_path, "w", encoding="utf-8") as f:
             f.write(outputs.get('daily_report', ''))
             
-        generate_header_image(date_str, header_path)
-        generate_audio(outputs.get('audio_script', ''), mp3_path)
+        header_result = get_header_image(date_str, header_path)
             
         # 4. 履歴の更新と保存（重複排除のため）
-        if DRIVE_FOLDER_ID:
+        if service and DRIVE_FOLDER_ID:
             try:
                 new_titles = [a['title'] for a in articles]
                 history.extend(new_titles)
-                save_history(DRIVE_FOLDER_ID, history)
+                save_history(service, DRIVE_FOLDER_ID, history, file_id)
             except Exception as e:
                 print(f"[警告] 履歴の保存に失敗しましたが継続します: {e}")
         
-        # 5. メール送信
-        send_email(f"【日刊】{outputs.get('article_title', date_str)} - {date_str}", "本日のレポートを添付します。", [md_ideas_path, md_report_path, header_path, mp3_path])
+        # 5. メール送信（ヘッダー画像がある場合のみ添付）
+        attachments = [md_ideas_path, md_report_path]
+        if header_result:
+            attachments.append(header_path)
+        send_email(f"【日刊】{outputs.get('article_title', date_str)} - {date_str}", "本日のレポートを添付します。", attachments)
         print("すべての工程が正常に終了しました。")
     except Exception as e:
         print(f"致命的エラー: {e}")
