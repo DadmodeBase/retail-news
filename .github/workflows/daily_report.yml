@@ -38,4 +38,4 @@ jobs:
           PYTHONUTF8: "1"
         shell: bash
         run: |
-          python scripts/neta_gatherer.py
+          python skills/neta_gatherer/neta_gatherer.py
