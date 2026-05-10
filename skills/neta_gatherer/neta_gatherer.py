@@ -3,7 +3,8 @@ import json
 import datetime
 import feedparser
 import re
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload, MediaIoBaseUpload
 from google.oauth2.credentials import Credentials
@@ -224,8 +225,7 @@ def generate_contents(articles):
         return None
     
     print("Geminiでレポートを生成しています...")
-    genai.configure(api_key=GEMINI_API_KEY)
-    model = genai.GenerativeModel('gemini-flash-latest')
+    client = genai.Client(api_key=GEMINI_API_KEY)
     
     context = "\n".join([f"- {a['title']}: {a['link']}" for a in articles])
     
@@ -263,7 +263,13 @@ def generate_contents(articles):
   "ideas_summary": "構造化されたネタ帳"
 }}
 """
-    response = model.generate_content(prompt, generation_config={"response_mime_type": "application/json"})
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt,
+        config=types.GenerateContentConfig(
+            response_mime_type="application/json",
+        ),
+    )
     
     # JSON部分を抽出（余計なテキストが含まれる場合の対策）
     text = response.text
