@@ -17,9 +17,13 @@ from email.mime.application import MIMEApplication
 from dotenv import load_dotenv
 import io
 import shutil
+import ssl
+import random
+import glob
 
 # 日本標準時 (JST)
 JST = datetime.timezone(datetime.timedelta(hours=9))
+ssl._create_default_https_context = ssl._create_unverified_context
 
 # プロジェクトルート & パス探索ヘルパー
 PROJECT_ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -47,13 +51,6 @@ DRIVE_FOLDER_ID = os.getenv("GOOGLE_DRIVE_FOLDER_ID")
 # 定数
 TARGET_DIR = os.path.join(PROJECT_ROOT, "content", "reports")
 os.makedirs(TARGET_DIR, exist_ok=True)
-RSS_FEEDS = [
-    "https://lnews.jp/feed",
-    "https://www.ryutsuu.biz/feed",
-    "https://prtimes.jp/main/html/searchrlp/kw/%E3%83%AA%E3%83%86%E3%83%BC%E3%83%ABDX",
-    "https://diamond-rm.net/feed/",
-    "https://news.google.com/rss/search?q=%E5%B0%8F%E5%A3%B2+OR+%E6%B5%81%E9%80%9A+OR+%E5%BA%97%E8%88%97DX&hl=ja&gl=JP&ceid=JP:ja"
-]
 HISTORY_FILENAME = "processed_history.json"
 
 def validate_env():
@@ -72,36 +69,29 @@ def validate_env():
 
 validate_env()
 
-
 def get_drive_service():
-    """Google Drive API サービスを取得。ローカルファイルと環境変数の両方に対応。"""
+    """Google Drive API サービスを取得。"""
     creds = None
     token_path = find_file("token.json")
     credentials_path = find_file("credentials.json")
     scopes = ["https://www.googleapis.com/auth/drive.file"]
 
-    # 1. 環境変数からのトークン取得を優先（GitHub Actions環境）
     token_json = os.getenv("GOOGLE_TOKEN_JSON")
     if token_json:
         try:
             creds_data = json.loads(token_json)
             creds = Credentials.from_authorized_user_info(creds_data, scopes)
-            print("[OK] Googleトークンを環境変数から読み込みました。")
         except Exception as e:
             print(f"[NG] 警告: GOOGLE_TOKEN_JSON の解析に失敗しました: {e}")
     
-    # 2. ローカルファイルからのトークン取得
     elif os.path.exists(token_path):
         creds = Credentials.from_authorized_user_file(token_path, scopes)
         
-    # 3. トークンがない、または無効な場合は認証または更新を行う
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
-            print("Googleトークンを更新しています...")
             try:
                 creds.refresh(Request())
             except Exception as e:
-                print(f"トークンの更新に失敗しました: {e}")
                 creds = None
         
         if not creds or not creds.valid:
@@ -114,10 +104,6 @@ def get_drive_service():
             else:
                 raise Exception("認証情報が見つかりません。")
             
-            if os.getenv("GITHUB_ACTIONS") and not token_json:
-                raise Exception("GitHub Actions環境では有効な GOOGLE_TOKEN_JSON が必須です。")
-            
-            print("ブラウザを開いて認証を行います...")
             creds = flow.run_local_server(port=0)
             
         if not os.getenv("GITHUB_ACTIONS"):
@@ -127,7 +113,7 @@ def get_drive_service():
     return build("drive", "v3", credentials=creds)
 
 def load_history(service, folder_id):
-    """Googleドライブから履歴ファイルを読み込む。データとfile_idのタプルを返す。"""
+    """Googleドライブから履歴ファイルを読み込む。"""
     print("過去の記事履歴を読み込んでいます...")
     try:
         query = f"name = '{HISTORY_FILENAME}' and '{folder_id}' in parents and trashed = false"
@@ -135,7 +121,6 @@ def load_history(service, folder_id):
         files = results.get('files', [])
         
         if not files:
-            print("履歴ファイルが見つかりません。新規作成します。")
             return [], None
             
         file_id = files[0]['id']
@@ -147,60 +132,44 @@ def load_history(service, folder_id):
             status, done = downloader.next_chunk()
         
         history_data = json.loads(fh.getvalue().decode('utf-8'))
-        print(f"[OK] {len(history_data)} 件の履歴を読み込みました。")
         return history_data, file_id
-    except Exception as e:
-        print(f"警告: 履歴の読み込みに失敗しました: {e}")
+    except Exception:
         return [], None
 
 def save_history(service, folder_id, history_data, file_id):
-    """履歴ファイルをGoogleドライブに保存（上書きまたは新規作成）"""
-    print(f"記事履歴を保存しています ({len(history_data)} 件)...")
+    """履歴ファイルをGoogleドライブに保存。"""
     try:
-        # 最新の500件に制限
         history_data = history_data[-500:]
-        
         file_metadata = {'name': HISTORY_FILENAME, 'parents': [folder_id]}
-        
-        # メモリ上のデータをアップロードするために MediaIoBaseUpload を使用
         fh = io.BytesIO(json.dumps(history_data, ensure_ascii=False).encode('utf-8'))
         media_body = MediaIoBaseUpload(fh, mimetype='application/json', resumable=True)
-        
         if file_id:
-            # 上書き
             service.files().update(fileId=file_id, media_body=media_body).execute()
         else:
-            # 新規作成
             service.files().create(body=file_metadata, media_body=media_body).execute()
-        print("[OK] 履歴の保存が完了しました。")
     except Exception as e:
         print(f"警告: 履歴の保存に失敗しました: {e}")
 
-def fetch_latest_news(history, now_jst):
-    print("ニュースを収集しています...")
+def fetch_latest_news(rss_feeds, target_days, history, now_jst):
+    print(f"ニュースを収集しています (対象期間: 直近{target_days}日間)...")
     articles = []
-    # 前日の記事のみを対象にする
-    target_date = (now_jst - datetime.timedelta(days=1)).date()
-    
+    target_dates = [(now_jst - datetime.timedelta(days=i)).date() for i in range(1, target_days + 1)]
     seen_titles = set(history)
     
-    for url in RSS_FEEDS:
+    for url in rss_feeds:
         try:
             feed = feedparser.parse(url)
             count = 0
             for entry in feed.entries:
-                # 重複チェック（タイトル）
                 if entry.title in seen_titles:
                     continue
                 
                 entry_time = entry.get('published_parsed') or entry.get('updated_parsed')
                 if entry_time:
                     try:
-                        # feedparserの時間はUTCなので、正しくJSTに変換する
                         dt_utc = datetime.datetime(*entry_time[:6], tzinfo=datetime.timezone.utc)
                         dt_jst = dt_utc.astimezone(JST)
-                        
-                        if dt_jst.date() == target_date:
+                        if dt_jst.date() in target_dates:
                             articles.append({
                                 "title": entry.title,
                                 "link": entry.link,
@@ -208,121 +177,211 @@ def fetch_latest_news(history, now_jst):
                             })
                             seen_titles.add(entry.title)
                             count += 1
-                    except Exception as e:
-                        print(f"警告: 記事の日付パースに失敗しました: {e}")
-                
-                if count >= 10:
-                    break
+                    except Exception: pass
+                if count >= 10: break
         except Exception as e:
             print(f"警告: {url} の取得に失敗しました: {e}")
     
     print(f"新規記事を {len(articles)} 件取得しました。")
     return articles
 
-
 def generate_contents(articles):
-    if not articles:
-        return None
-    
+    if not articles: return None
     print("Geminiでレポートを生成しています...")
     client = genai.Client(api_key=GEMINI_API_KEY)
-    
     context = "\n".join([f"- {a['title']}: {a['link']}" for a in articles])
-    
     prompt = f"""
-あなたはフィールドマーケティングの専門家です。以下の最新ニュースから3つのトピックスを選び、
-デイリーレポートを作成してください。
+あなたはフィールドマーケティングの専門家です。以下の最新ニュースから3つのトピックスを選び、デイリーレポートを作成してください。
 
 【ニュースソース】
 {context}
 
-【アウトプット1：デイリーレポート (note貼り付け用)】
-以下の構成で作成してください。合計1,800文字程度のボリュームにします。
-1. タイトル（1行目）：概要がわかるタイトル。トピックで取り上げた企業名を【】で囲んで冒頭に付ける（例：【イオン、ヤオコー、セブンイレブン】店舗DXと価格戦略の最前線）
+【アウトプット：デイリーレポート】
+1. タイトル（1行目）：トピックで取り上げた企業名を【】で囲んで冒頭に付ける
 2. 空行
 3. 全体概要：3つのトピックを俯瞰した導入文。
 4. 各トピック（3セット）：
-    - トピックタイトル（独立した行として記載。記号は使わない）
+    - トピックタイトル（独立した行）
     - 空行
-    - ソースURL（URLのみをそのまま生で記載。独立した段落とするため、必ず前後に空行を入れること）
+    - ソースURL（そのまま記載。前後に空行）
     - 空行
     - 本文：専門家としての深い解説コラム。
 
-【文体ルール（重要）】
-- Markdown記法（##, **, >, - など）は絶対に、一切使わないでください。
-- すべてプレーンテキスト形式で書いてください。
-- 見出しや強調に記号を使わず、文章の内容と構成のみで読みやすさを確保してください。
-- リンクにMarkdown記法 [ ]( ) は使わず、URLをそのまま生で記載してください。
-- 句点（。）ごとに改行してください。
-- 2〜3文ごとに空行を入れてください。
+【文体ルール】
+- Markdown記法は使わず、プレーンテキスト形式で。
+- 句点（。）ごとに改行し、2〜3文ごとに空行。
+- リンクはURLをそのまま記載。
 
 出力は以下のJSON形式でお願いします。
 {{
   "article_title": "タイトル",
-  "daily_report": "レポート全文",
-  "ideas_summary": "構造化されたネタ帳"
+  "daily_report": "レポート全文"
 }}
 """
     response = client.models.generate_content(
         model="gemini-3-flash-preview",
         contents=prompt,
-        config=types.GenerateContentConfig(
-            response_mime_type="application/json",
-        ),
+        config=types.GenerateContentConfig(response_mime_type="application/json"),
     )
-    
-    # JSON部分を抽出（余計なテキストが含まれる場合の対策）
-    text = response.text
     try:
-        match = re.search(r'\{.*\}', text, re.DOTALL)
-        if match:
-            data = json.loads(match.group())
-        else:
-            data = json.loads(text)
-    except Exception as e:
-        print(f"[エラー] JSONのパースに失敗しました: {e}")
-        print(f"生の出力: {text}")
+        data = json.loads(re.search(r'\{.*\}', response.text, re.DOTALL).group())
+        if 'article_title' in data and data['article_title'] not in data['daily_report']:
+            data['daily_report'] = f"{data['article_title']}\n\n" + data['daily_report']
+        return data
+    except Exception: return None
+
+def generate_weekly_summary(now_jst):
+    print("過去1週間のレポートをまとめています...")
+    reports = []
+    for i in range(1, 8):
+        target_date = (now_jst - datetime.timedelta(days=i)).strftime("%Y-%m-%d")
+        path = os.path.join(TARGET_DIR, f"{target_date}-daily-report.md")
+        if os.path.exists(path):
+            with open(path, "r", encoding="utf-8") as f:
+                reports.append(f"--- {target_date} ---\n" + f.read())
+    
+    if not reports:
+        print("過去のレポートが見つからないため、まとめを作成できません。")
         return None
     
-    # note向け修正
-    if 'daily_report' in data:
-        report = data['daily_report']
-        # タイトルが本文に含まれていない場合は追加
-        if 'article_title' in data and data['article_title'] not in report:
-            report = f"{data['article_title']}\n\n" + report
-        data['daily_report'] = report
-        
-    return data
+    client = genai.Client(api_key=GEMINI_API_KEY)
+    context = "\n\n".join(reports)
+    prompt = f"""
+あなたはフィールドマーケティングの専門家です。過去1週間に作成した以下の記事まとめを参照し、
+一般消費者を対象として、暮らしの身近な部分に影響が出そうな内容をお知らせ・共有する記事を作成してください。
 
+【過去1週間の記事内容】
+{context}
+
+【アウトプット：週間まとめレポート】
+- 文字数：2000文字程度
+- 内容：暮らしにどのような影響があるか、メリットを中心に分かりやすく解説。
+- タイトル：【週間まとめ】暮らしを変えるリテール最新トレンド（{now_jst.strftime('%m/%d')}週）
+- 構成：1. 全体俯瞰、2. 注目トピックの深掘り（3〜4つ）、3. まとめ
+
+【文体ルール】
+- Markdown記法禁止。プレーンテキスト形式。
+- 句点ごとに改行、2〜3文ごとに空行。
+
+出力は以下のJSON形式でお願いします。
+{{
+  "article_title": "タイトル",
+  "daily_report": "レポート全文"
+}}
+"""
+    response = client.models.generate_content(
+        model="gemini-3-flash-preview",
+        contents=prompt,
+        config=types.GenerateContentConfig(response_mime_type="application/json"),
+    )
+    try:
+        data = json.loads(re.search(r'\{.*\}', response.text, re.DOTALL).group())
+        if 'article_title' in data and data['article_title'] not in data['daily_report']:
+            data['daily_report'] = f"{data['article_title']}\n\n" + data['daily_report']
+        return data
+    except Exception: return None
+
+def load_note_urls():
+    mapping_path = os.path.join(PROJECT_ROOT, "content", "docs", "retail_url_mapping.md")
+    published_dir = os.path.join(PROJECT_ROOT, "content", "posts", "published")
+    note_articles = []
+    
+    if os.path.exists(mapping_path):
+        try:
+            with open(mapping_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    if line.startswith("|") and "note.com" in line:
+                        parts = [p.strip() for p in line.split("|")]
+                        if len(parts) >= 4:
+                            filename = parts[1].replace('`', '')
+                            # url_mapping.md内では 'drafts/...' となっている場合もあるため basename を取る
+                            filepath = os.path.join(published_dir, os.path.basename(filename))
+                            url = parts[3]
+                            if url.startswith("https://note.com") and os.path.exists(filepath):
+                                note_articles.append({"file": filepath, "url": url})
+        except Exception as e:
+            print(f"url_mapping.mdの読み込みに失敗しました: {e}")
+    return note_articles
+
+def generate_x_posts(today_report, date_str):
+    print("X（Twitter）用の投稿案を生成しています...")
+    note_articles = load_note_urls()
+    today_url = "[本日のnoteのURL]"
+    
+    past_reports = []
+    if len(note_articles) >= 2:
+        selected_articles = random.sample(note_articles, 2)
+    else:
+        selected_articles = note_articles
+        
+    for article in selected_articles:
+        past_date = os.path.basename(article["file"])[:10]
+        url = article["url"]
+        with open(article["file"], "r", encoding="utf-8") as file:
+            # プロンプトが長くなりすぎないように冒頭2000文字程度に絞る
+            content_sample = file.read()[:2000]
+            past_reports.append(f"【過去のnote記事: {past_date}】\nURL: {url}\n" + content_sample)
+            
+    past_context = "\n\n".join(past_reports)
+    client = genai.Client(api_key=GEMINI_API_KEY)
+
+    
+    prompt = f"""
+あなたはリテールDXとフィールドマーケティングの専門家です。
+本日のレポートと過去のレポートを元に、X（Twitter）で1日に3回投稿するためのポスト案を作成してください。
+
+【本日のレポート】
+{today_report}
+
+【過去のレポート（再放送用）】
+{past_context}
+
+【アウトプット要件】
+以下の3つのポストを作成してください。
+1. 「本日の新着記事」に関するポスト（本文とハッシュタグ合わせて110文字以内）
+2. 「過去記事1」に関するポスト（本文とハッシュタグ合わせて110文字以内）
+3. 「過去記事2」に関するポスト（本文とハッシュタグ合わせて110文字以内）
+
+・この記事を自身のブログ（note）で公開・解説したという前提で、ブログ記事を読みたくなるような誘導（ティーザー）のポストにしてください。
+・「本日の新着記事」のポストの最後には、必ず {today_url} をそのまま記載してください。
+・「過去記事」のポストの最後には、それぞれに提供された「URL」の値をそのまま記載してください。
+・Xの制限（全角140文字）に収めるため、本文＋ハッシュタグ2つ＋URLで合計140文字に収まるように、本文は必ず【110文字以内】と短く簡潔にしてください。
+・専門家としての鋭い視点や、現場の人が「なるほど」と思う気づきを含めること。
+・プレーンテキストで、以下のフォーマットで出力してください。
+
+【本日のX投稿スケジュール案】
+
+① 朝（本日の記事紹介）
+(ポスト本文)
+(今日のURL)
+
+② 昼（過去記事の再紹介）
+(ポスト本文)
+(過去記事のURL)
+
+③ 晩（過去記事の再紹介）
+(ポスト本文)
+(過去記事のURL)
+"""
+    try:
+        response = client.models.generate_content(
+            model="gemini-3-flash-preview",
+            contents=prompt
+        )
+        return response.text.strip()
+    except Exception as e:
+        print(f"X投稿案の生成に失敗しました: {e}")
+        return ""
 
 def get_header_image(date_str, output_path):
-    """
-    ヘッダー画像を取得する。
-    1. assets/headers/{MM-DD}.png (Canva製プリセット)
-    2. assets/headers/{YYYY-MM-DD}-header.png (過去の生成物)
-    """
     mm_dd = date_str[5:10]
     headers_dir = os.path.join(PROJECT_ROOT, "assets", "headers")
-    
-    # 候補1: プリセット (05-09.png)
     preset_path = os.path.join(headers_dir, f"{mm_dd}.png")
-    # 候補2: 日付入り (2026-05-09-header.png)
     dated_path = os.path.join(headers_dir, f"{date_str}-header.png")
-    
-    target_path = None
-    if os.path.exists(preset_path):
-        print(f"[OK] プリセット画像を使用します: {mm_dd}.png")
-        target_path = preset_path
-    elif os.path.exists(dated_path):
-        print(f"[OK] 日付入り画像を使用します: {date_str}-header.png")
-        target_path = dated_path
-    
+    target_path = preset_path if os.path.exists(preset_path) else (dated_path if os.path.exists(dated_path) else None)
     if target_path:
-        if target_path != output_path:
-            shutil.copy(target_path, output_path)
+        if target_path != output_path: shutil.copy(target_path, output_path)
         return output_path
-    
-    print(f"[警告] ヘッダー画像が見つかりません: {preset_path} または {dated_path}")
     return None
 
 def send_email(subject, body, attachment_paths):
@@ -343,56 +402,55 @@ def main():
     try:
         now_jst = datetime.datetime.now(JST)
         date_str = now_jst.strftime("%Y-%m-%d")
+        weekday = now_jst.weekday() # 0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri, 5=Sat, 6=Sun
         
-        # 0. Drive サービスの初期化 & 履歴の読み込み
-        service = None
-        history = []
-        file_id = None
-        if DRIVE_FOLDER_ID:
-            service = get_drive_service()
-            history, file_id = load_history(service, DRIVE_FOLDER_ID)
-            
-        # 1. ニュース収集
-        articles = fetch_latest_news(history, now_jst)
-        if not articles:
-            print("新しい記事がないため、本日の処理を終了します。")
-            return
-            
-        # 2. コンテンツ生成
-        outputs = generate_contents(articles)
-        if not outputs: return
+        service = get_drive_service() if DRIVE_FOLDER_ID else None
+        history, file_id = load_history(service, DRIVE_FOLDER_ID) if service else ([], None)
 
-        # 3. ファイルの保存
-        md_ideas_path = os.path.join(TARGET_DIR, f"{date_str}-ideas.md")
-        md_report_path = os.path.join(TARGET_DIR, f"{date_str}-daily-report.md")
-        header_path = os.path.join(TARGET_DIR, f"{date_str}-header.png")
-
-        with open(md_ideas_path, "w", encoding="utf-8") as f:
-            f.write(json.dumps(outputs.get('ideas_summary', ''), ensure_ascii=False, indent=2))
-        with open(md_report_path, "w", encoding="utf-8") as f:
-            f.write(outputs.get('daily_report', ''))
+        if weekday == 6: # 日曜日：週間まとめ
+            outputs = generate_weekly_summary(now_jst)
+        else: # 平日・土曜：通常レポート
+            # 曜日別ソース設定
+            if weekday in [0, 3]: # 月・木：流通ニュース
+                feeds, target_days = ["https://www.ryutsuu.biz/feed"], 1
+            elif weekday in [1, 5]: # 火・土：PR TIMES
+                feeds, target_days = ["https://news.google.com/rss/search?q=site:prtimes.jp+%E3%83%AA%E3%83%86%E3%83%BC%E3%83%ABDX&hl=ja&gl=JP&ceid=JP:ja"], 7
+            else: # 水・金：LNEWS & ダイヤモンドRM
+                feeds, target_days = ["https://lnews.jp/feed", "https://diamond-rm.net/feed/"], 1
             
-        header_result = get_header_image(date_str, header_path)
-            
-        # 4. 履歴の更新と保存（重複排除のため）
-        if service and DRIVE_FOLDER_ID:
-            try:
+            articles = fetch_latest_news(feeds, target_days, history, now_jst)
+            if not articles:
+                print("新しい記事がないため終了します。")
+                return
+            outputs = generate_contents(articles)
+            # 履歴の保存
+            if service and history is not None:
                 new_titles = [a['title'] for a in articles]
                 history.extend(new_titles)
                 save_history(service, DRIVE_FOLDER_ID, history, file_id)
-            except Exception as e:
-                print(f"[警告] 履歴の保存に失敗しましたが継続します: {e}")
+
+        if not outputs: return
+
+        # ファイル保存
+        md_report_path = os.path.join(TARGET_DIR, f"{date_str}-daily-report.md")
+        with open(md_report_path, "w", encoding="utf-8") as f:
+            f.write(outputs.get('daily_report', ''))
         
-        # 5. メール送信（ヘッダー画像がある場合のみ添付）
-        attachments = [md_ideas_path, md_report_path]
-        if header_result:
-            attachments.append(header_path)
-        send_email(f"【日刊】{outputs.get('article_title', date_str)} - {date_str}", "本日のレポートを添付します。", attachments)
+        header_path = os.path.join(TARGET_DIR, f"{date_str}-header.png")
+        header_result = get_header_image(date_str, header_path)
+        
+        attachments = [md_report_path]
+        if header_result: attachments.append(header_path)
+        
+        # X投稿案の生成
+        x_posts_text = generate_x_posts(outputs.get('daily_report', ''), date_str)
+        email_body = "本日のレポートを添付します。\n\n" + x_posts_text
+        
+        send_email(f"【日刊】{outputs.get('article_title', date_str)} - {date_str}", email_body, attachments)
         print("すべての工程が正常に終了しました。")
     except Exception as e:
-        print(f"致命的エラー: {e}")
-        import traceback
         traceback.print_exc()
 
 if __name__ == "__main__":
+    import traceback
     main()
