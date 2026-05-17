@@ -25,3 +25,4 @@
 | `note_imported_n4da5c4a60b13.md` | 【イオン、ヤオコー、はなまるうどん】デフレ再燃への対抗策と高付加価値化。小売・飲食業の生存戦略 | https://note.com/cool_hyena6987/n/n4da5c4a60b13 |
 | `note_imported_nd55fce32c238.md` | 【サミット、三越伊勢丹、イオン】都心戦略と収益構造の転換がもたらす小売業の新潮流 | https://note.com/cool_hyena6987/n/nd55fce32c238 |
 | `note_imported_n37496407eb46.md` | 【アドインテ・セキュア・日本気象協会】デジタル広告の信頼性向上と実店舗のDX・気象適応戦略 | https://note.com/cool_hyena6987/n/n37496407eb46 |
+| `note_imported_n67a043c4bdf7.md` | 【True Data / DearOne / 江崎グリコ】データ利活用とリテールメディアが創る新たな現場マーケティング | https://note.com/cool_hyena6987/n/n67a043c4bdf7 |
