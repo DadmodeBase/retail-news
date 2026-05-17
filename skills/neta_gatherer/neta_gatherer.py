@@ -411,8 +411,12 @@ def main():
             outputs = generate_weekly_summary(now_jst)
         else: # 平日・土曜：通常レポート
             # 曜日別ソース設定
-            if weekday in [0, 3]: # 月・木：流通ニュース
+            if weekday == 0: # 月曜：LNEWS & ダイヤモンドRM（週末分を含めて3日間）
+                feeds, target_days = ["https://lnews.jp/feed", "https://diamond-rm.net/feed/"], 3
+            elif weekday in [2, 3]: # 水・木：流通ニュース
                 feeds, target_days = ["https://www.ryutsuu.biz/feed"], 1
+            elif weekday == 4: # 金曜：LNEWS & ダイヤモンドRM
+                feeds, target_days = ["https://lnews.jp/feed", "https://diamond-rm.net/feed/"], 1
             elif weekday in [1, 5]: # 火・土：PR TIMES
                 feeds, target_days = ["https://news.google.com/rss/search?q=site:prtimes.jp+%E3%83%AA%E3%83%86%E3%83%BC%E3%83%ABDX&hl=ja&gl=JP&ceid=JP:ja"], 7
             else: # 水・金：LNEWS & ダイヤモンドRM
