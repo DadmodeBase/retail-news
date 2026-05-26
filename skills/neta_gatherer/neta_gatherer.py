@@ -304,19 +304,53 @@ def load_note_urls():
             print(f"url_mapping.mdの読み込みに失敗しました: {e}")
     return note_articles
 
+def get_article_date(article):
+    # ファイル名から日付（YYYY-MM-DD）の抽出を試みる
+    basename = os.path.basename(article["file"])
+    match = re.match(r"^(\d{4}-\d{2}-\d{2})", basename)
+    if match:
+        try:
+            return datetime.datetime.strptime(match.group(1), "%Y-%m-%d").date()
+        except ValueError:
+            pass
+    # 抽出できない場合はファイルの更新日時を使用する（JSTに変換）
+    try:
+        mtime = os.path.getmtime(article["file"])
+        dt_utc = datetime.datetime.fromtimestamp(mtime, datetime.timezone.utc)
+        return dt_utc.astimezone(JST).date()
+    except Exception:
+        # 万が一のエラー時は古い日付にして対象外にする
+        return datetime.date(2000, 1, 1)
+
 def generate_x_posts(today_report, date_str):
     print("X（Twitter）用の投稿案を生成しています...")
     note_articles = load_note_urls()
     today_url = "[本日のnoteのURL]"
     
+    # 過去2週間（直近14日間）の範囲に絞り込む
+    today = datetime.datetime.now(JST).date()
+    two_weeks_ago = today - datetime.timedelta(days=14)
+    
+    recent_articles = []
+    for article in note_articles:
+        art_date = get_article_date(article)
+        if two_weeks_ago <= art_date <= today:
+            recent_articles.append(article)
+            
     past_reports = []
-    if len(note_articles) >= 2:
-        selected_articles = random.sample(note_articles, 2)
+    if len(recent_articles) >= 2:
+        selected_articles = random.sample(recent_articles, 2)
     else:
-        selected_articles = note_articles
-        
+        print("警告: 過去2週間以内の記事が不足しているため、全期間の記事から取得します。")
+        if len(note_articles) >= 2:
+            selected_articles = random.sample(note_articles, 2)
+        else:
+            selected_articles = note_articles
+            
     for article in selected_articles:
-        past_date = os.path.basename(article["file"])[:10]
+        basename = os.path.basename(article["file"])
+        match = re.match(r"^(\d{4}-\d{2}-\d{2})", basename)
+        past_date = match.group(1) if match else "過去記事"
         url = article["url"]
         with open(article["file"], "r", encoding="utf-8") as file:
             # プロンプトが長くなりすぎないように冒頭2000文字程度に絞る
@@ -399,8 +433,86 @@ def send_email(subject, body, attachment_paths):
         server.login(EMAIL_SENDER, EMAIL_PASSWORD)
         server.send_message(msg)
 
+def sync_note_articles():
+    import subprocess
+    print("note RSSから最新記事の自動同期を試みています...")
+    rss_url = "https://note.com/cool_hyena6987/rss"
+    mapping_path = os.path.join(PROJECT_ROOT, "content", "docs", "retail_url_mapping.md")
+    published_dir = os.path.join(PROJECT_ROOT, "content", "posts", "published")
+    os.makedirs(published_dir, exist_ok=True)
+    
+    if not os.path.exists(mapping_path):
+        print("警告: retail_url_mapping.md が見つからないため同期をスキップします。")
+        return
+        
+    # 現在登録済みのURLを読み込む
+    registered_urls = set()
+    try:
+        with open(mapping_path, "r", encoding="utf-8") as f:
+            for line in f:
+                if line.startswith("|") and "note.com" in line:
+                    parts = [p.strip() for p in line.split("|")]
+                    if len(parts) >= 4:
+                        url = parts[3]
+                        registered_urls.add(url)
+    except Exception as e:
+        print(f"現在のマッピング読み込みに失敗: {e}")
+        return
+
+    # noteのRSSから最新記事を取得
+    updated = False
+    try:
+        feed = feedparser.parse(rss_url)
+        new_entries = []
+        for entry in feed.entries:
+            url = entry.link
+            if url.startswith("https://note.com/cool_hyena6987") and url not in registered_urls:
+                # 新規記事を発見！
+                new_entries.append(entry)
+                
+        if new_entries:
+            # 古い順に追加するために逆順にする
+            new_entries.reverse()
+            with open(mapping_path, "a", encoding="utf-8") as f:
+                for entry in new_entries:
+                    url = entry.link
+                    # note IDの抽出
+                    match = re.search(r"/n/(n[a-f0-9]+)", url)
+                    note_id = match.group(1) if match else f"gen_{random.randint(1000, 9999)}"
+                    filename = f"note_imported_{note_id}.md"
+                    title = entry.title
+                    
+                    # マッピングファイルに追記
+                    f.write(f"| `note_imported_{note_id}.md` | {title} | {url} |\n")
+                    print(f"自動同期: 新規記事を登録しました: {title}")
+                    
+                    # 対応する実ファイル（空ファイル）がなければ作成
+                    filepath = os.path.join(published_dir, filename)
+                    if not os.path.exists(filepath):
+                        summary = entry.get("summary", "")
+                        clean_summary = re.sub(r"<[^>]*>", "", summary)[:1000]
+                        with open(filepath, "w", encoding="utf-8") as pf:
+                            pf.write(f"# {title}\n\n{clean_summary}\n")
+                    
+                    registered_urls.add(url)
+                    updated = True
+                    
+            if updated and os.getenv("GITHUB_ACTIONS"):
+                print("GitHub Actions環境を検知しました。自動プッシュを実行します...")
+                subprocess.run(["git", "config", "--local", "user.email", "actions@github.com"], check=True)
+                subprocess.run(["git", "config", "--local", "user.name", "github-actions[bot]"], check=True)
+                subprocess.run(["git", "add", "content/docs/retail_url_mapping.md", "content/posts/published/note_imported_*.md"], check=False)
+                subprocess.run(["git", "commit", "-m", "auto: sync new note articles from RSS [skip ci]"], check=True)
+                subprocess.run(["git", "push"], check=True)
+                print("最新マッピングの自動コミット＆プッシュが完了しました。")
+    except Exception as e:
+        print(f"自動同期処理中にエラーが発生しました: {e}")
+
 def main():
     try:
+        # note記事の自動同期処理を実行
+        sync_note_articles()
+        
         now_jst = datetime.datetime.now(JST)
         date_str = now_jst.strftime("%Y-%m-%d")
         weekday = now_jst.weekday() # 0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri, 5=Sat, 6=Sun

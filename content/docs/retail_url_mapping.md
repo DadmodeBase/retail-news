@@ -33,3 +33,7 @@
 | `note_imported_n5fcfd455ebdb.md` | 【鴻池運輸・ヤオコー・富士薬品】物流効率化と地域密着型店舗戦略の最前線 | https://note.com/cool_hyena6987/n/n5fcfd455ebdb |
 | `note_imported_n1e997cb1f753.md` | 【日本通信紙/ビーツ/AI博覧会】リアル店舗の摩擦解消と体験価値の向上 | https://note.com/cool_hyena6987/n/n1e997cb1f753 |
 | `note_imported_neccf7780030b.md` | 【RX Japan】地方活性化とビジネス創出を牽引する九州イノベーションWEEKのマーケティング価値 | https://note.com/cool_hyena6987/n/neccf7780030b |
+| `note_imported_n09acccd7efd7.md` | 言語化をしない人は、AI時代に静かに取り残される | https://note.com/cool_hyena6987/n/n09acccd7efd7 |
+| `note_imported_n10ef86a4ecca.md` | noteが更新できない罪悪感を、AIに毎朝肩代わりさせることにした | https://note.com/cool_hyena6987/n/n10ef86a4ecca |
+| `note_imported_nf1131064e778.md` | 自動化すれば継続できるという勘違い。AIに肩代わりさせたはずの「note更新の罪悪感」が倍増した理由 | https://note.com/cool_hyena6987/n/nf1131064e778 |
+| `note_imported_n10ecd610b0b6.md` | データと「店長の直感」で人手不足を乗り切る。食品スーパーがAI『Antigravity』を武器にする実践メソッド | https://note.com/cool_hyena6987/n/n10ecd610b0b6 |
