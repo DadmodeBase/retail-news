@@ -26,3 +26,10 @@
 | `note_imported_nd55fce32c238.md` | 【サミット、三越伊勢丹、イオン】都心戦略と収益構造の転換がもたらす小売業の新潮流 | https://note.com/cool_hyena6987/n/nd55fce32c238 |
 | `note_imported_n37496407eb46.md` | 【アドインテ・セキュア・日本気象協会】デジタル広告の信頼性向上と実店舗のDX・気象適応戦略 | https://note.com/cool_hyena6987/n/n37496407eb46 |
 | `note_imported_n67a043c4bdf7.md` | 【True Data / DearOne / 江崎グリコ】データ利活用とリテールメディアが創る新たな現場マーケティング | https://note.com/cool_hyena6987/n/n67a043c4bdf7 |
+| `note_imported_n1c923785fe0b.md` | 【福山通運・ヨコレイ・ROMS】物流拠点の再編と自動化・専門特化が加速する市場動向 | https://note.com/cool_hyena6987/n/n1c923785fe0b |
+| `note_imported_n6e56353535ce.md` | 【AccuNotify・Buddycom・ウィルベース】リテールメディアと現場DXによる店舗体験の高度化 | https://note.com/cool_hyena6987/n/n6e56353535ce |
+| `note_imported_nde065c00b9af.md` | 【バローHD・ニトリ・アマゾン】小売業界の規模拡大と店頭最適化、デジタル融合の加速 | https://note.com/cool_hyena6987/n/nde065c00b9af |
+| `note_imported_n3469b62a7ef3.md` | 【イトーヨーカドー・セブンイレブン他・ベイシア】食の「内食・中食」ボーダレス化と専門性強化の戦略 | https://note.com/cool_hyena6987/n/n3469b62a7ef3 |
+| `note_imported_n5fcfd455ebdb.md` | 【鴻池運輸・ヤオコー・富士薬品】物流効率化と地域密着型店舗戦略の最前線 | https://note.com/cool_hyena6987/n/n5fcfd455ebdb |
+| `note_imported_n1e997cb1f753.md` | 【日本通信紙/ビーツ/AI博覧会】リアル店舗の摩擦解消と体験価値の向上 | https://note.com/cool_hyena6987/n/n1e997cb1f753 |
+| `note_imported_neccf7780030b.md` | 【RX Japan】地方活性化とビジネス創出を牽引する九州イノベーションWEEKのマーケティング価値 | https://note.com/cool_hyena6987/n/neccf7780030b |
