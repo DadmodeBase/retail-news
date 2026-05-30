@@ -20,6 +20,7 @@ import shutil
 import ssl
 import random
 import glob
+import traceback
 
 # 日本標準時 (JST)
 JST = datetime.timezone(datetime.timedelta(hours=9))
@@ -593,9 +594,27 @@ def main():
         
         send_email(f"【日刊】{outputs.get('article_title', date_str)} - {date_str}", email_body, attachments)
         print("すべての工程が正常に終了しました。")
+        
+        # GitHub Actions上でレポートをリポジトリに保存（日曜の週間まとめで参照するため）
+        if os.getenv("GITHUB_ACTIONS"):
+            try:
+                import subprocess
+                print("レポートをリポジトリに保存しています...")
+                subprocess.run(["git", "config", "--local", "user.email", "actions@github.com"], check=True)
+                subprocess.run(["git", "config", "--local", "user.name", "github-actions[bot]"], check=True)
+                subprocess.run(["git", "add", f"content/reports/{date_str}-daily-report.md"], check=False)
+                # コミット対象がない場合（変更なし）はスキップ
+                result = subprocess.run(["git", "diff", "--cached", "--quiet"], capture_output=True)
+                if result.returncode != 0:
+                    subprocess.run(["git", "commit", "-m", f"auto: save daily report {date_str} [skip ci]"], check=True)
+                    subprocess.run(["git", "push"], check=True)
+                    print("レポートの保存が完了しました。")
+                else:
+                    print("レポートに変更がないためコミットをスキップしました。")
+            except Exception as e:
+                print(f"警告: レポートの保存に失敗しました（メール送信は完了済み）: {e}")
     except Exception as e:
         traceback.print_exc()
 
 if __name__ == "__main__":
-    import traceback
     main()
