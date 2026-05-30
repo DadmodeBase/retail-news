@@ -39,3 +39,5 @@
 | `note_imported_n10ecd610b0b6.md` | データと「店長の直感」で人手不足を乗り切る。食品スーパーがAI『Antigravity』を武器にする実践メソッド | https://note.com/cool_hyena6987/n/n10ecd610b0b6 |
 | `note_imported_n472c2673d2b1.md` | 【オンワード／アオキスーパー／日本アクセス】気候変動対策・個客最適化・体験型イベントに見る店頭活性化戦略 | https://note.com/cool_hyena6987/n/n472c2673d2b1 |
 | `note_imported_n9a6c531b4171.md` | 【薬王堂・大創産業・神戸物産】関東進出とマルチブランド展開、資本業務提携が示すリテール市場の新競争戦略 | https://note.com/cool_hyena6987/n/n9a6c531b4171 |
+| `note_imported_nf7a323a57458.md` | 【ローソン・セブンイレブン・大創産業】小売・コンビニ業界における顧客接触点開拓と時間帯・ターゲット特化型アプローチの最前線 | https://note.com/cool_hyena6987/n/nf7a323a57458 |
+| `note_imported_n7cc41fdb875c.md` | 【アマゾン・Zoff・マイクロアド】ロジスティクス革新とリアル体験、インバウンド誘致が変えるフィールドマーケティング | https://note.com/cool_hyena6987/n/n7cc41fdb875c |
