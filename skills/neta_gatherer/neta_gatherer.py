@@ -53,6 +53,15 @@ TARGET_DIR = os.path.join(PROJECT_ROOT, "content", "reports")
 os.makedirs(TARGET_DIR, exist_ok=True)
 HISTORY_FILENAME = "processed_history.json"
 
+# PR TIMES フィルタリング用キーワード（タイトルまたはsummaryに含まれる記事を対象にする）
+PRTIMES_KEYWORDS = [
+    "リテール", "小売", "店舗", "流通", "EC", "コンビニ", "スーパー",
+    "ドラッグストア", "マーケティング", "DX", "OMO", "POS", "決済",
+    "買い物", "販促", "棚", "売場", "売り場", "接客", "無人",
+    "セルフレジ", "デジタルサイネージ", "フードロス", "食品ロス",
+    "ネットスーパー", "物流", "ラストワンマイル", "配送",
+]
+
 def validate_env():
     """必要な環境変数が揃っているか確認する"""
     required_vars = {
@@ -150,18 +159,31 @@ def save_history(service, folder_id, history_data, file_id):
     except Exception as e:
         print(f"警告: 履歴の保存に失敗しました: {e}")
 
-def fetch_latest_news(rss_feeds, target_days, history, now_jst):
-    print(f"ニュースを収集しています (対象期間: 直近{target_days}日間)...")
+def _matches_keywords(entry, keywords):
+    """記事のタイトルまたはsummaryにキーワードが含まれるか判定する。"""
+    text = (entry.title + " " + entry.get("summary", "")).upper()
+    return any(k.upper() in text for k in keywords)
+
+def fetch_latest_news(rss_feeds, target_days, history, now_jst, keywords=None):
+    print(f"ニュースを収集しています (対象期間: 当日含む直近{target_days}日間)...")
+    if keywords:
+        print(f"キーワードフィルタ有効: {len(keywords)}個のキーワードでPR TIMES記事を絞り込み")
     articles = []
-    target_dates = [(now_jst - datetime.timedelta(days=i)).date() for i in range(1, target_days + 1)]
+    target_dates = [(now_jst - datetime.timedelta(days=i)).date() for i in range(0, target_days + 1)]
     seen_titles = set(history)
     
     for url in rss_feeds:
         try:
+            # PR TIMESのURLの場合のみキーワードフィルタを適用
+            apply_filter = keywords and "prtimes.jp" in url
             feed = feedparser.parse(url)
             count = 0
             for entry in feed.entries:
                 if entry.title in seen_titles:
+                    continue
+                
+                # PR TIMESのみキーワードフィルタで絞り込み
+                if apply_filter and not _matches_keywords(entry, keywords):
                     continue
                 
                 entry_time = entry.get('published_parsed') or entry.get('updated_parsed')
@@ -530,12 +552,18 @@ def main():
                 feeds, target_days = ["https://www.ryutsuu.biz/feed"], 1
             elif weekday == 4: # 金曜：LNEWS & ダイヤモンドRM
                 feeds, target_days = ["https://lnews.jp/feed", "https://diamond-rm.net/feed/"], 1
-            elif weekday in [1, 5]: # 火・土：PR TIMES
-                feeds, target_days = ["https://news.google.com/rss/search?q=site:prtimes.jp+%E3%83%AA%E3%83%86%E3%83%BC%E3%83%ABDX&hl=ja&gl=JP&ceid=JP:ja"], 7
+            elif weekday in [1, 5]: # 火・土：PR TIMES（公式RSSからキーワードフィルタリング）+ フォールバック
+                feeds, target_days = [
+                    "https://prtimes.jp/index.rdf",
+                    "https://lnews.jp/feed",
+                    "https://www.ryutsuu.biz/feed",
+                ], 1
             else: # 水・金：LNEWS & ダイヤモンドRM
                 feeds, target_days = ["https://lnews.jp/feed", "https://diamond-rm.net/feed/"], 1
             
-            articles = fetch_latest_news(feeds, target_days, history, now_jst)
+            # PR TIMESのみキーワードフィルタリングを適用（他のRSSは全記事対象）
+            kw_filter = PRTIMES_KEYWORDS if weekday in [1, 5] else None
+            articles = fetch_latest_news(feeds, target_days, history, now_jst, keywords=kw_filter)
             if not articles:
                 print("新しい記事がないため終了します。")
                 return
