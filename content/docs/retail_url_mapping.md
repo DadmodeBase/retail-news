@@ -41,3 +41,4 @@
 | `note_imported_n9a6c531b4171.md` | 【薬王堂・大創産業・神戸物産】関東進出とマルチブランド展開、資本業務提携が示すリテール市場の新競争戦略 | https://note.com/cool_hyena6987/n/n9a6c531b4171 |
 | `note_imported_nf7a323a57458.md` | 【ローソン・セブンイレブン・大創産業】小売・コンビニ業界における顧客接触点開拓と時間帯・ターゲット特化型アプローチの最前線 | https://note.com/cool_hyena6987/n/nf7a323a57458 |
 | `note_imported_n7cc41fdb875c.md` | 【アマゾン・Zoff・マイクロアド】ロジスティクス革新とリアル体験、インバウンド誘致が変えるフィールドマーケティング | https://note.com/cool_hyena6987/n/n7cc41fdb875c |
+| `note_imported_nca27b5a5f3d5.md` | 【ドン・キホーテ／資さんうどん／ファミリーマート】体験型店舗と異業種転換、環境対応が示す店舗開発の新潮流 | https://note.com/cool_hyena6987/n/nca27b5a5f3d5 |
