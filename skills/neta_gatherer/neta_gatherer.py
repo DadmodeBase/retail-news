@@ -21,6 +21,7 @@ import ssl
 import random
 import glob
 import traceback
+import time
 
 # 日本標準時 (JST)
 JST = datetime.timezone(datetime.timedelta(hours=9))
@@ -208,6 +209,24 @@ def fetch_latest_news(rss_feeds, target_days, history, now_jst, keywords=None):
     print(f"新規記事を {len(articles)} 件取得しました。")
     return articles
 
+def generate_content_with_retry(client, model, contents, config=None, max_retries=5, delay=5):
+    """Gemini APIの呼び出しをリトライするヘルパー関数"""
+    for attempt in range(max_retries):
+        try:
+            if config:
+                return client.models.generate_content(model=model, contents=contents, config=config)
+            else:
+                return client.models.generate_content(model=model, contents=contents)
+        except Exception as e:
+            err_msg = str(e)
+            is_temporary = any(kw in err_msg.upper() for kw in ["503", "429", "UNAVAILABLE", "RESOURCE_EXHAUSTED", "HIGH DEMAND", "TEMPORARY", "LIMIT"])
+            if attempt < max_retries - 1 and is_temporary:
+                wait_time = delay * (2 ** attempt)
+                print(f"[警告] Gemini API が一時的に利用できません ({err_msg})。{wait_time} 秒後に再試行します... (試行 {attempt + 1}/{max_retries})")
+                time.sleep(wait_time)
+            else:
+                raise e
+
 def generate_contents(articles):
     if not articles: return None
     print("Geminiでレポートを生成しています...")
@@ -242,7 +261,8 @@ def generate_contents(articles):
   "daily_report": "レポート全文"
 }}
 """
-    response = client.models.generate_content(
+    response = generate_content_with_retry(
+        client=client,
         model="gemini-3.5-flash",
         contents=prompt,
         config=types.GenerateContentConfig(response_mime_type="application/json"),
@@ -293,7 +313,8 @@ def generate_weekly_summary(now_jst):
   "daily_report": "レポート全文"
 }}
 """
-    response = client.models.generate_content(
+    response = generate_content_with_retry(
+        client=client,
         model="gemini-3.5-flash",
         contents=prompt,
         config=types.GenerateContentConfig(response_mime_type="application/json"),
@@ -422,7 +443,8 @@ def generate_x_posts(today_report, date_str):
 (過去記事のURL)
 """
     try:
-        response = client.models.generate_content(
+        response = generate_content_with_retry(
+            client=client,
             model="gemini-3.5-flash",
             contents=prompt
         )
