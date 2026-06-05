@@ -43,3 +43,4 @@
 | `note_imported_n7cc41fdb875c.md` | 【アマゾン・Zoff・マイクロアド】ロジスティクス革新とリアル体験、インバウンド誘致が変えるフィールドマーケティング | https://note.com/cool_hyena6987/n/n7cc41fdb875c |
 | `note_imported_nca27b5a5f3d5.md` | 【ドン・キホーテ／資さんうどん／ファミリーマート】体験型店舗と異業種転換、環境対応が示す店舗開発の新潮流 | https://note.com/cool_hyena6987/n/nca27b5a5f3d5 |
 | `note_imported_n775aaf409618.md` | 【イオンウエルシア九州】【みやぎ生協】【プレナス】地方都市における新たな生活密着型店舗と購買体験向上への挑戦 | https://note.com/cool_hyena6987/n/n775aaf409618 |
+| `note_imported_nff5a55b0c486.md` | 【イオン／Uber Eats Japan／イオン北海道】地域密着とラストワンマイル強化が拓く店舗マーケティングの新潮流 | https://note.com/cool_hyena6987/n/nff5a55b0c486 |
