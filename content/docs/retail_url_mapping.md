@@ -46,3 +46,4 @@
 | `note_imported_nff5a55b0c486.md` | 【イオン／Uber Eats Japan／イオン北海道】地域密着とラストワンマイル強化が拓く店舗マーケティングの新潮流 | https://note.com/cool_hyena6987/n/nff5a55b0c486 |
 | `note_imported_nf17834216f10.md` | 【ベイシア・イオン北海道・京王百貨店】局地化する顧客ニーズを捉える、新たなリアル店舗展開戦略 | https://note.com/cool_hyena6987/n/nf17834216f10 |
 | `note_imported_nbfe4babfaa21.md` | 【ローソン・Mujin・デンソーソリューション】物流DXと地域密着型店舗がもたらすフィールドマーケティングの新潮流 | https://note.com/cool_hyena6987/n/nbfe4babfaa21 |
+| `note_imported_n6828634d5318.md` | 【NTTドコモ・ローソン・ライフコーポレーション】デジタルとリアルが融合する店舗マーケティングの最新潮流 | https://note.com/cool_hyena6987/n/n6828634d5318 |
