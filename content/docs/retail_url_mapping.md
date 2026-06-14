@@ -50,3 +50,4 @@
 | `note_imported_n5f8124066215.md` | 【イオン】【セブンイレブン】【カスミ】大手流通・小売業の最新実績と新規出店戦略から読み解く店舗起点のフィールドマーケティング活性化策 | https://note.com/cool_hyena6987/n/n5f8124066215 |
 | `note_imported_na35a2eb66405.md` | 【LOWYA】【ロフト】【イオン】実店舗戦略と地域密着型アプローチが描く、これからのフィールドマーケティング | https://note.com/cool_hyena6987/n/na35a2eb66405 |
 | `note_imported_n78d9ab42ac23.md` | 【株式会社リリー／ベイシア／靄渦】リアルな場を起点としたフィールドマーケティングの進化と新たな店舗形態の可能性 | https://note.com/cool_hyena6987/n/n78d9ab42ac23 |
+| `note_imported_n890d1e68a689.md` | 【週間まとめ】暮らしを変えるリテール最新トレンド（06/14週） | https://note.com/cool_hyena6987/n/n890d1e68a689 |
