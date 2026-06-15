@@ -51,3 +51,4 @@
 | `note_imported_na35a2eb66405.md` | 【LOWYA】【ロフト】【イオン】実店舗戦略と地域密着型アプローチが描く、これからのフィールドマーケティング | https://note.com/cool_hyena6987/n/na35a2eb66405 |
 | `note_imported_n78d9ab42ac23.md` | 【株式会社リリー／ベイシア／靄渦】リアルな場を起点としたフィールドマーケティングの進化と新たな店舗形態の可能性 | https://note.com/cool_hyena6987/n/n78d9ab42ac23 |
 | `note_imported_n890d1e68a689.md` | 【週間まとめ】暮らしを変えるリテール最新トレンド（06/14週） | https://note.com/cool_hyena6987/n/n890d1e68a689 |
+| `note_imported_n1e7b0d43ad1f.md` | 【セブン-イレブン／JR東日本／松屋フーズ】リテールメディア本格化と流通チャネル多角化がもたらす顧客接点のイノベーション | https://note.com/cool_hyena6987/n/n1e7b0d43ad1f |
