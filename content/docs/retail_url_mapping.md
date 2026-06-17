@@ -53,3 +53,4 @@
 | `note_imported_n890d1e68a689.md` | 【週間まとめ】暮らしを変えるリテール最新トレンド（06/14週） | https://note.com/cool_hyena6987/n/n890d1e68a689 |
 | `note_imported_n1e7b0d43ad1f.md` | 【セブン-イレブン／JR東日本／松屋フーズ】リテールメディア本格化と流通チャネル多角化がもたらす顧客接点のイノベーション | https://note.com/cool_hyena6987/n/n1e7b0d43ad1f |
 | `note_imported_nf9e6d5625fce.md` | 【ベイシア】【ドン・キホーテ】【スガキヤ】地域特性に応じた出店とエリア開拓によるリアル店舗の価値最大化 | https://note.com/cool_hyena6987/n/nf9e6d5625fce |
+| `note_imported_n0261fb662a5d.md` | 【ベイシア】【ヨドバシカメラ】【ポプラ】多様化する店舗フォーマットと省人化がもたらすフィールドマーケティングの新展開 | https://note.com/cool_hyena6987/n/n0261fb662a5d |
