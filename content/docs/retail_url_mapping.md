@@ -55,3 +55,4 @@
 | `note_imported_nf9e6d5625fce.md` | 【ベイシア】【ドン・キホーテ】【スガキヤ】地域特性に応じた出店とエリア開拓によるリアル店舗の価値最大化 | https://note.com/cool_hyena6987/n/nf9e6d5625fce |
 | `note_imported_n0261fb662a5d.md` | 【ベイシア】【ヨドバシカメラ】【ポプラ】多様化する店舗フォーマットと省人化がもたらすフィールドマーケティングの新展開 | https://note.com/cool_hyena6987/n/n0261fb662a5d |
 | `note_imported_ndf9913d6f9dc.md` | 【カインズ・ワークマン・パルコ】チャネル開拓とデジタル活用がもたらす店舗価値の最大化 | https://note.com/cool_hyena6987/n/ndf9913d6f9dc |
+| `note_imported_ne8dc409f7816.md` | 【エフェクチュアル】【イオン】【ヨークHD】店舗体験の再定義と地域密着型マーケティングの未来 | https://note.com/cool_hyena6987/n/ne8dc409f7816 |
