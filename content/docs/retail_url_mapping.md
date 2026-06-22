@@ -57,3 +57,4 @@
 | `note_imported_ndf9913d6f9dc.md` | 【カインズ・ワークマン・パルコ】チャネル開拓とデジタル活用がもたらす店舗価値の最大化 | https://note.com/cool_hyena6987/n/ndf9913d6f9dc |
 | `note_imported_ne8dc409f7816.md` | 【エフェクチュアル】【イオン】【ヨークHD】店舗体験の再定義と地域密着型マーケティングの未来 | https://note.com/cool_hyena6987/n/ne8dc409f7816 |
 | `note_imported_na7cc1151de0c.md` | 【週間まとめ】暮らしを変えるリテール最新トレンド（06/21週） | https://note.com/cool_hyena6987/n/na7cc1151de0c |
+| `note_imported_nee08d0ed1e34.md` | 【ロッテ・イオンリテール・サッポロ】コスト高騰と市場変化に対応する、店頭価値訴求の最新戦略 | https://note.com/cool_hyena6987/n/nee08d0ed1e34 |
