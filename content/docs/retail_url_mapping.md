@@ -60,3 +60,4 @@
 | `note_imported_nee08d0ed1e34.md` | 【ロッテ・イオンリテール・サッポロ】コスト高騰と市場変化に対応する、店頭価値訴求の最新戦略 | https://note.com/cool_hyena6987/n/nee08d0ed1e34 |
 | `note_imported_n1514f12746be.md` | 【ヨドバシHD・モスフードサービス・4社共催】リアル店舗の多機能化と顧客体験の再設計がもたらすローカルマーケティングの新潮流 | https://note.com/cool_hyena6987/n/n1514f12746be |
 | `note_imported_n19216fe532d8.md` | 【イオンリテール・三陽商会・帝国データバンク】生活防衛意識の高まりと商業施設における体験価値・新業態展開の加速 | https://note.com/cool_hyena6987/n/n19216fe532d8 |
+| `note_imported_n9c26dc2af986.md` | 【データ・ワン／ロピア／パルシステム】デジタルとリアルが融合する顧客体験の最前線 | https://note.com/cool_hyena6987/n/n9c26dc2af986 |
