@@ -63,3 +63,4 @@
 | `note_imported_n9c26dc2af986.md` | 【データ・ワン／ロピア／パルシステム】デジタルとリアルが融合する顧客体験の最前線 | https://note.com/cool_hyena6987/n/n9c26dc2af986 |
 | `note_imported_n05ff87301893.md` | 【ローソン・ミニストップ・イオンリテール】リアル店舗の多機能化と地域密着型フィールド戦略の最前線 | https://note.com/cool_hyena6987/n/n05ff87301893 |
 | `note_imported_n4113c7f37853.md` | 【ダイエー・トライアルHD・ローソン】小売業のフォーマット進化と顧客接点の多様化 | https://note.com/cool_hyena6987/n/n4113c7f37853 |
+| `note_imported_nf54fbd1ce961.md` | 【週間まとめ】暮らしを変えるリテール最新トレンド（07/12週） | https://note.com/cool_hyena6987/n/nf54fbd1ce961 |
