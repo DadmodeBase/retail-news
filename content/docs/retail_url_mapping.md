@@ -68,3 +68,4 @@
 | `note_imported_n374631083ea7.md` | 【岡山高島屋／三菱UFJ銀行／カスミ】リアル店舗と地域資源の融合がもたらす新たな顧客体験と地域共創の未来 | https://note.com/cool_hyena6987/n/n374631083ea7 |
 | `note_imported_n760f156d9854.md` | 【農心ジャパン・ファミリーマート・カインズ】地域密着と体験価値向上を狙うフィールドマーケティング最前線 | https://note.com/cool_hyena6987/n/n760f156d9854 |
 | `note_imported_n8125e4c045e3.md` | 【イオン九州・オーケー・スーパーマーケット業界】ディスカウント志向の強まりと流通構造の転換期におけるエリア戦略 | https://note.com/cool_hyena6987/n/n8125e4c045e3 |
+| `note_imported_n649845b3e0b1.md` | 【Uber Eats・イオン北海道・ナビタイムジャパン】クイックコマース拡大と地域密着型店舗改革、配送効率化がもたらすフィールドマーケティングの新たな地平 | https://note.com/cool_hyena6987/n/n649845b3e0b1 |
