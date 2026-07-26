@@ -58,11 +58,28 @@ HISTORY_FILENAME = "processed_history.json"
 # PR TIMES フィルタリング用キーワード（タイトルまたはsummaryに含まれる記事を対象にする）
 PRTIMES_KEYWORDS = [
     "リテール", "小売", "店舗", "流通", "EC", "コンビニ", "スーパー",
-    "ドラッグストア", "マーケティング", "DX", "OMO", "POS", "決済",
+    "ドラッグストア", "DgS", "薬局", "調剤", "調剤併設", "セルフメディケーション", "電子処方箋",
+    "ウエルシア", "ウエルシア薬局", "イオンハピコム",
+    "ツルハ", "ツルハドラッグ", "くすりの福太郎", "レデイ薬局", "杏林堂", "B&D",
+    "マツキヨ", "マツモトキヨシ", "ココカラファイン", "ココカラ",
+    "コスモス", "ディスカウントドラッグコスモス", "コスモス薬品",
+    "サンドラッグ", "ダイレックス",
+    "スギ薬局", "スギホールディングス", "スギドラッグ", "ジャパン",
+    "クスリのアオキ",
+    "カワチ薬品", "カワチ",
+    "クリエイトSD", "クリエイト",
+    "薬王堂",
+    "ゲンキー", "GENKY",
+    "V・ドラッグ", "ブードラッグ", "中部薬品", "バロー",
+    "キリン堂",
+    "サツドラ", "サッポロドラッグストアー",
+    "セキ薬品", "ドラッグストアセキ",
+    "マーケティング", "DX", "OMO", "POS", "決済",
     "買い物", "販促", "棚", "売場", "売り場", "接客", "無人",
     "セルフレジ", "デジタルサイネージ", "フードロス", "食品ロス",
     "ネットスーパー", "物流", "ラストワンマイル", "配送",
 ]
+
 
 def validate_env():
     """必要な環境変数が揃っているか確認する"""
@@ -166,46 +183,72 @@ def _matches_keywords(entry, keywords):
     text = (entry.title + " " + entry.get("summary", "")).upper()
     return any(k.upper() in text for k in keywords)
 
-def fetch_latest_news(rss_feeds, target_days, history, now_jst, keywords=None):
+DRUGSTORE_GOOGLE_NEWS_FEED = "https://news.google.com/rss/search?q=ドラッグストア+OR+DgS+OR+調剤薬局&hl=ja&gl=JP&ceid=JP:ja"
+
+ALL_FALLBACK_FEEDS = [
+    "https://lnews.jp/feed",
+    "https://www.ryutsuu.biz/feed",
+    "https://diamond-rm.net/feed/",
+    DRUGSTORE_GOOGLE_NEWS_FEED,
+    "https://prtimes.jp/index.rdf"
+]
+
+def fetch_latest_news(rss_feeds, target_days, history, now_jst, keywords=None, fallback_feeds=None):
     print(f"ニュースを収集しています (対象期間: 当日含む直近{target_days}日間)...")
     if keywords:
         print(f"キーワードフィルタ有効: {len(keywords)}個のキーワードでPR TIMES記事を絞り込み")
-    articles = []
-    target_dates = [(now_jst - datetime.timedelta(days=i)).date() for i in range(0, target_days + 1)]
-    seen_titles = set(history)
     
-    for url in rss_feeds:
-        try:
-            # PR TIMESのURLの場合のみキーワードフィルタを適用
-            apply_filter = keywords and "prtimes.jp" in url
-            feed = feedparser.parse(url)
-            count = 0
-            for entry in feed.entries:
-                if entry.title in seen_titles:
-                    continue
-                
-                # PR TIMESのみキーワードフィルタで絞り込み
-                if apply_filter and not _matches_keywords(entry, keywords):
-                    continue
-                
-                entry_time = entry.get('published_parsed') or entry.get('updated_parsed')
-                if entry_time:
-                    try:
-                        dt_utc = datetime.datetime(*entry_time[:6], tzinfo=datetime.timezone.utc)
-                        dt_jst = dt_utc.astimezone(JST)
-                        if dt_jst.date() in target_dates:
-                            articles.append({
-                                "title": entry.title,
-                                "link": entry.link,
-                                "summary": entry.get("summary", ""),
-                            })
-                            seen_titles.add(entry.title)
-                            count += 1
-                    except Exception: pass
-                if count >= 10: break
-        except Exception as e:
-            print(f"警告: {url} の取得に失敗しました: {e}")
+    def _fetch(feeds, days):
+        articles = []
+        target_dates = [(now_jst - datetime.timedelta(days=i)).date() for i in range(0, days + 1)]
+        seen_titles = set(history)
+        
+        for url in feeds:
+            try:
+                apply_filter = keywords and "prtimes.jp" in url
+                feed = feedparser.parse(url)
+                count = 0
+                for entry in feed.entries:
+                    if entry.title in seen_titles:
+                        continue
+                    
+                    if apply_filter and not _matches_keywords(entry, keywords):
+                        continue
+                    
+                    entry_time = entry.get('published_parsed') or entry.get('updated_parsed')
+                    if entry_time:
+                        try:
+                            dt_utc = datetime.datetime(*entry_time[:6], tzinfo=datetime.timezone.utc)
+                            dt_jst = dt_utc.astimezone(JST)
+                            if dt_jst.date() in target_dates:
+                                articles.append({
+                                    "title": entry.title,
+                                    "link": entry.link,
+                                    "summary": entry.get("summary", ""),
+                                })
+                                seen_titles.add(entry.title)
+                                count += 1
+                        except Exception: pass
+                    if count >= 10: break
+            except Exception as e:
+                print(f"警告: {url} の取得に失敗しました: {e}")
+        return articles
+
+    articles = _fetch(rss_feeds, target_days)
     
+    # フォールバック 1: 指定ソースで0件の場合、予備フィードを追加探索
+    if not articles:
+        print("[フォールバック] メインフィードで新規記事が見つかりませんでした。予備フィードを探索します...")
+        search_feeds = list(dict.fromkeys(rss_feeds + (fallback_feeds or []) + ALL_FALLBACK_FEEDS))
+        articles = _fetch(search_feeds, target_days)
+            
+    # フォールバック 2: それでも0件の場合、対象日数を1日広げて再探索
+    if not articles:
+        extended_days = target_days + 1
+        print(f"[フォールバック] 対象期間を直近{extended_days}日間に拡張して探索します...")
+        search_feeds = list(dict.fromkeys(rss_feeds + (fallback_feeds or []) + ALL_FALLBACK_FEEDS))
+        articles = _fetch(search_feeds, extended_days)
+
     print(f"新規記事を {len(articles)} 件取得しました。")
     return articles
 
@@ -234,6 +277,9 @@ def generate_contents(articles):
     context = "\n".join([f"- {a['title']}: {a['link']}" for a in articles])
     prompt = f"""
 あなたはフィールドマーケティングの専門家です。以下の最新ニュースから3つのトピックスを選び、デイリーレポートを作成してください。
+
+【トピック選定ルール】
+- 収集したニュースの中にドラッグストア・調剤併設・薬局関連（ウエルシア、ツルハ、マツキヨ、スギ薬局、コスモス等の主要チェーンやDgS動向）のニュースが含まれている場合は、3つのトピックのうち少なくとも1つは優先的にドラッグストア関連のニュースを選出してください。
 
 【ニュースソース】
 {context}
@@ -524,11 +570,23 @@ def sync_note_articles():
                     # note IDの抽出
                     match = re.search(r"/n/(n[a-f0-9]+)", url)
                     note_id = match.group(1) if match else f"gen_{random.randint(1000, 9999)}"
-                    filename = f"note_imported_{note_id}.md"
+                    
+                    published = entry.get('published_parsed') or entry.get('updated_parsed')
+                    if published:
+                        try:
+                            dt_utc = datetime.datetime(*published[:6], tzinfo=datetime.timezone.utc)
+                            dt_jst = dt_utc.astimezone(JST)
+                            date_prefix = dt_jst.strftime("%Y-%m-%d")
+                        except Exception:
+                            date_prefix = datetime.datetime.now(JST).strftime("%Y-%m-%d")
+                    else:
+                        date_prefix = datetime.datetime.now(JST).strftime("%Y-%m-%d")
+                        
+                    filename = f"{date_prefix}-note_imported_{note_id}.md"
                     title = entry.title
                     
                     # マッピングファイルに追記
-                    f.write(f"| `note_imported_{note_id}.md` | {title} | {url} |\n")
+                    f.write(f"| `{filename}` | {title} | {url} |\n")
                     print(f"自動同期: 新規記事を登録しました: {title}")
                     
                     # 対応する実ファイル（空ファイル）がなければ作成
@@ -569,24 +627,26 @@ def main():
             outputs = generate_weekly_summary(now_jst)
         else: # 平日・土曜：通常レポート
             # 曜日別ソース設定
-            if weekday == 0: # 月曜：LNEWS & ダイヤモンドRM（週末分を含めて3日間）
-                feeds, target_days = ["https://lnews.jp/feed", "https://diamond-rm.net/feed/"], 3
-            elif weekday in [2, 3]: # 水・木：流通ニュース
-                feeds, target_days = ["https://www.ryutsuu.biz/feed"], 1
-            elif weekday == 4: # 金曜：LNEWS & ダイヤモンドRM
-                feeds, target_days = ["https://lnews.jp/feed", "https://diamond-rm.net/feed/"], 1
+            if weekday == 0: # 月曜：LNEWS & ダイヤモンドRM & 流通ニュース（週末分を含めて3日間）
+                feeds, target_days = ["https://lnews.jp/feed", "https://diamond-rm.net/feed/", "https://www.ryutsuu.biz/feed", DRUGSTORE_GOOGLE_NEWS_FEED], 3
+            elif weekday in [2, 3]: # 水・木：流通ニュース & LNEWS & ダイヤモンドRM
+                feeds, target_days = ["https://www.ryutsuu.biz/feed", "https://lnews.jp/feed", "https://diamond-rm.net/feed/", DRUGSTORE_GOOGLE_NEWS_FEED], 1
+            elif weekday == 4: # 金曜：LNEWS & ダイヤモンドRM & 流通ニュース
+                feeds, target_days = ["https://lnews.jp/feed", "https://diamond-rm.net/feed/", "https://www.ryutsuu.biz/feed", DRUGSTORE_GOOGLE_NEWS_FEED], 1
             elif weekday in [1, 5]: # 火・土：PR TIMES（公式RSSからキーワードフィルタリング）+ フォールバック
                 feeds, target_days = [
                     "https://prtimes.jp/index.rdf",
                     "https://lnews.jp/feed",
                     "https://www.ryutsuu.biz/feed",
+                    "https://diamond-rm.net/feed/",
+                    DRUGSTORE_GOOGLE_NEWS_FEED,
                 ], 1
-            else: # 水・金：LNEWS & ダイヤモンドRM
-                feeds, target_days = ["https://lnews.jp/feed", "https://diamond-rm.net/feed/"], 1
+            else: # その他フォールバック
+                feeds, target_days = ["https://lnews.jp/feed", "https://www.ryutsuu.biz/feed", "https://diamond-rm.net/feed/", DRUGSTORE_GOOGLE_NEWS_FEED], 1
             
             # PR TIMESのみキーワードフィルタリングを適用（他のRSSは全記事対象）
             kw_filter = PRTIMES_KEYWORDS if weekday in [1, 5] else None
-            articles = fetch_latest_news(feeds, target_days, history, now_jst, keywords=kw_filter)
+            articles = fetch_latest_news(feeds, target_days, history, now_jst, keywords=kw_filter, fallback_feeds=ALL_FALLBACK_FEEDS)
             if not articles:
                 print("新しい記事がないため終了します。")
                 return

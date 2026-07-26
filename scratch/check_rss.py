@@ -1,18 +1,19 @@
 import feedparser
-import ssl
+import datetime
 
-ssl._create_default_https_context = ssl._create_unverified_context
+rss_url = "https://note.com/cool_hyena6987/rss"
+feed = feedparser.parse(rss_url)
 
-url = "https://news.google.com/rss/search?q=site:prtimes.jp+%E3%83%AA%E3%83%86%E3%83%BC%E3%83%ABDX&hl=ja&gl=JP&ceid=JP:ja"
-feed = feedparser.parse(url)
+print(f"フィードタイトル: {feed.feed.get('title')}")
+print(f"記事数: {len(feed.entries)}")
 
-if feed.entries:
-    entry = feed.entries[0]
-    print(f"Title: {entry.title}")
-    print(f"Link: {entry.link}")
-    # print all keys to see if there is a direct link
-    print(f"Keys: {entry.keys()}")
-    if 'source' in entry:
-        print(f"Source: {entry.source}")
-else:
-    print("No entries found")
+for i, entry in enumerate(feed.entries):
+    published = entry.get('published_parsed') or entry.get('updated_parsed')
+    dt_jst = "不明"
+    if published:
+        dt_utc = datetime.datetime(*published[:6], tzinfo=datetime.timezone.utc)
+        dt_jst = dt_utc.astimezone(datetime.timezone(datetime.timedelta(hours=9)))
+    
+    print(f"\n[{i+1}] {entry.title}")
+    print(f"  URL: {entry.link}")
+    print(f"  公開日時: {dt_jst}")
