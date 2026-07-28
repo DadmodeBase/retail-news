@@ -70,3 +70,6 @@
 | `2026-07-24-note_imported_n649845b3e0b1.md` | 【Uber Eats・イオン北海道・ナビタイムジャパン】クイックコマース拡大と地域密着型店舗改革、配送効率化がもたらすフィールドマーケティングの新たな地平 | https://note.com/cool_hyena6987/n/n649845b3e0b1 |
 | `2026-07-26-note_imported_n5794eb80527e.md` | 【週間まとめ】暮らしを変えるリテール最新トレンド（07/26週） | https://note.com/cool_hyena6987/n/n5794eb80527e |
 | `2026-07-27-note_imported_nfe7f67bc07af.md` | 【コスモス薬品】【イオン】【ローソンストア100】郊外型ドラッグストアの攻勢と大手小売・利便性重視ストアの差別化戦略 | https://note.com/cool_hyena6987/n/nfe7f67bc07af |
+| `2026-07-28-note_imported_n79f4bbbbed4f.md` | 【クリエイトＳＤ・イオン・東武ストア】ドミナント強化と低価格PB拡大、気象連動MDが示す店頭戦略の進化 | https://note.com/cool_hyena6987/n/n79f4bbbbed4f |
+| `2026-07-28-note_imported_n3cd78e68a885.md` | 「ちょっと仕事行ってくるわ」で気兼ねなく出かけられる。40代サラリーマンのための週末タイミー活用術 | https://note.com/cool_hyena6987/n/n3cd78e68a885 |
+| `2026-07-28-note_imported_nb15888edd466.md` | Google日本語入力からCopilot Keyboard（MS IME）へ辞書移行したら「登録単語数0件」で終了する原因と解決策 | https://note.com/cool_hyena6987/n/nb15888edd466 |
