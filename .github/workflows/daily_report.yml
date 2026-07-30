@@ -2,8 +2,8 @@ name: Daily Retail News Report
 
 on:
   schedule:
-    # 毎日JST朝5時（UTC 20:00）に実行
-    - cron: '13 20 * * *'
+    # 毎日JST午前11時（UTC 2:00）に実行
+    - cron: '0 2 * * *'
   workflow_dispatch: # 手動実行用ボタン
 
 jobs:
