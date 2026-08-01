@@ -74,3 +74,4 @@
 | `2026-07-28-note_imported_n3cd78e68a885.md` | 「ちょっと仕事行ってくるわ」で気兼ねなく出かけられる。40代サラリーマンのための週末タイミー活用術 | https://note.com/cool_hyena6987/n/n3cd78e68a885 |
 | `2026-07-28-note_imported_nb15888edd466.md` | Google日本語入力からCopilot Keyboard（MS IME）へ辞書移行したら「登録単語数0件」で終了する原因と解決策 | https://note.com/cool_hyena6987/n/nb15888edd466 |
 | `2026-07-30-note_imported_na6d4b254f4ce.md` | 【アインHD・イオン・宅配各社】熊本地震における流通・インフラ企業の対応と今後のフィールド戦略 | https://note.com/cool_hyena6987/n/na6d4b254f4ce |
+| `2026-07-31-note_imported_na9d1bf5840d3.md` | 【ツルハHD・ウエルシアHD／ライフ／タイミー】流通小売業の新たな顧客接点構築と柔軟な人材活用戦略 | https://note.com/cool_hyena6987/n/na9d1bf5840d3 |
