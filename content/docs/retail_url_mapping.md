@@ -77,3 +77,4 @@
 | `2026-07-31-note_imported_na9d1bf5840d3.md` | 【ツルハHD・ウエルシアHD／ライフ／タイミー】流通小売業の新たな顧客接点構築と柔軟な人材活用戦略 | https://note.com/cool_hyena6987/n/na9d1bf5840d3 |
 | `2026-08-01-note_imported_neca60f508676.md` | 【ウエルシア・ツルハ・マツキヨココカラ・スギ・セブン＆アイ】流通大手の再編・提携と価格戦略に伴うフィールドマーケティングの変革 | https://note.com/cool_hyena6987/n/neca60f508676 |
 | `2026-08-02-note_imported_nc13dfa49a8b1.md` | 【週間まとめ】暮らしを変えるリテール最新トレンド（08/02週） | https://note.com/cool_hyena6987/n/nc13dfa49a8b1 |
+| `2026-08-03-note_imported_n627f0e89cf32.md` | 【日本チェーンドラッグストア協会】【ファミリーマート】【ローソン】市場成長、災害対応、デジタル決済から見る店舗マーケティング戦略 | https://note.com/cool_hyena6987/n/n627f0e89cf32 |
