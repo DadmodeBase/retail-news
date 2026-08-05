@@ -78,3 +78,4 @@
 | `2026-08-01-note_imported_neca60f508676.md` | 【ウエルシア・ツルハ・マツキヨココカラ・スギ・セブン＆アイ】流通大手の再編・提携と価格戦略に伴うフィールドマーケティングの変革 | https://note.com/cool_hyena6987/n/neca60f508676 |
 | `2026-08-02-note_imported_nc13dfa49a8b1.md` | 【週間まとめ】暮らしを変えるリテール最新トレンド（08/02週） | https://note.com/cool_hyena6987/n/nc13dfa49a8b1 |
 | `2026-08-03-note_imported_n627f0e89cf32.md` | 【日本チェーンドラッグストア協会】【ファミリーマート】【ローソン】市場成長、災害対応、デジタル決済から見る店舗マーケティング戦略 | https://note.com/cool_hyena6987/n/n627f0e89cf32 |
+| `2026-08-04-note_imported_n3c126f2048d1.md` | 【サンドラッグ／イオンリテール／セブン＆アイHD】デジタル技術が牽引するリアル店舗の構造改革と次世代リテール戦略 | https://note.com/cool_hyena6987/n/n3c126f2048d1 |
