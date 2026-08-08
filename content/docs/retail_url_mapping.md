@@ -81,3 +81,4 @@
 | `2026-08-04-note_imported_n3c126f2048d1.md` | 【サンドラッグ／イオンリテール／セブン＆アイHD】デジタル技術が牽引するリアル店舗の構造改革と次世代リテール戦略 | https://note.com/cool_hyena6987/n/n3c126f2048d1 |
 | `2026-08-06-note_imported_n845c6fcaa1c5.md` | 【クスリのアオキ／ローソン／アマゾン】小売・流通の進化と現場オペレーションの再構築 | https://note.com/cool_hyena6987/n/n845c6fcaa1c5 |
 | `2026-08-06-note_imported_na5a05aed06e3.md` | 【富士薬品】【ローソン】【トリドールHD】地域連携、新購買接点、AI出店戦略がもたらすフィールドマーケティングの新潮流 | https://note.com/cool_hyena6987/n/na5a05aed06e3 |
+| `2026-08-07-note_imported_n787e818bb581.md` | 【マツキヨココカラ】【ワークマン】【モノタロウ】リテールにおける防災対応、需要創造、物流効率化の最新アプローチ | https://note.com/cool_hyena6987/n/n787e818bb581 |
