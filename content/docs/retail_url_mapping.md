@@ -83,3 +83,4 @@
 | `2026-08-06-note_imported_na5a05aed06e3.md` | 【富士薬品】【ローソン】【トリドールHD】地域連携、新購買接点、AI出店戦略がもたらすフィールドマーケティングの新潮流 | https://note.com/cool_hyena6987/n/na5a05aed06e3 |
 | `2026-08-07-note_imported_n787e818bb581.md` | 【マツキヨココカラ】【ワークマン】【モノタロウ】リテールにおける防災対応、需要創造、物流効率化の最新アプローチ | https://note.com/cool_hyena6987/n/n787e818bb581 |
 | `2026-08-08-note_imported_n3342cca787ff.md` | 【ZKONG・サンドラッグ・ローソン】店舗効率化とリアル店舗の競合優位性確立に向けた最新動向 | https://note.com/cool_hyena6987/n/n3342cca787ff |
+| `2026-08-09-note_imported_nbced80ae03a1.md` | 【週間まとめ】暮らしを変えるリテール最新トレンド（08/09週） | https://note.com/cool_hyena6987/n/nbced80ae03a1 |
