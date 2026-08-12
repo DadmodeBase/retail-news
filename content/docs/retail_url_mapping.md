@@ -84,3 +84,5 @@
 | `2026-08-07-note_imported_n787e818bb581.md` | 【マツキヨココカラ】【ワークマン】【モノタロウ】リテールにおける防災対応、需要創造、物流効率化の最新アプローチ | https://note.com/cool_hyena6987/n/n787e818bb581 |
 | `2026-08-08-note_imported_n3342cca787ff.md` | 【ZKONG・サンドラッグ・ローソン】店舗効率化とリアル店舗の競合優位性確立に向けた最新動向 | https://note.com/cool_hyena6987/n/n3342cca787ff |
 | `2026-08-09-note_imported_nbced80ae03a1.md` | 【週間まとめ】暮らしを変えるリテール最新トレンド（08/09週） | https://note.com/cool_hyena6987/n/nbced80ae03a1 |
+| `2026-08-11-note_imported_n24d725937026.md` | 【スーパー3社比較】真夏の売場VMD解剖。なぜ単発POPは埋もれ、「全館統一テーマPOP」は買い手の足を止めるのか？ | https://note.com/cool_hyena6987/n/n24d725937026 |
+| `2026-08-11-note_imported_n47b0868720fc.md` | 【コピペ&スマホ写真で簡単】タイミー導入店舗のための「即戦力化マニュアル」＆「優先度タスクシート」作成パッケージ | https://note.com/cool_hyena6987/n/n47b0868720fc |
