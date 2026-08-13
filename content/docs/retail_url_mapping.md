@@ -86,3 +86,4 @@
 | `2026-08-09-note_imported_nbced80ae03a1.md` | 【週間まとめ】暮らしを変えるリテール最新トレンド（08/09週） | https://note.com/cool_hyena6987/n/nbced80ae03a1 |
 | `2026-08-11-note_imported_n24d725937026.md` | 【スーパー3社比較】真夏の売場VMD解剖。なぜ単発POPは埋もれ、「全館統一テーマPOP」は買い手の足を止めるのか？ | https://note.com/cool_hyena6987/n/n24d725937026 |
 | `2026-08-11-note_imported_n47b0868720fc.md` | 【コピペ&スマホ写真で簡単】タイミー導入店舗のための「即戦力化マニュアル」＆「優先度タスクシート」作成パッケージ | https://note.com/cool_hyena6987/n/n47b0868720fc |
+| `2026-08-13-note_imported_n025ad1c82897.md` | 【ハンズ】【Amazon】【ドラッグストア業界】デジタル接客・物流網整備と店舗保安対策の最前線 | https://note.com/cool_hyena6987/n/n025ad1c82897 |
