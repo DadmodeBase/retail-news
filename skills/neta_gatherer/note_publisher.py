@@ -73,23 +73,33 @@ def publish_to_note(
         page = context.new_page()
         
         try:
-            # 1. noteのエディタページへアクセス
-            print("1. エディタページを開いています...")
-            page.goto("https://editor.note.com/notes/new", wait_until="networkidle", timeout=60000)
+            # 1. noteトップページを開いて「投稿」からエディタへ遷移
+            print("1. noteトップページへアクセス中...")
+            page.goto("https://note.com/", wait_until="networkidle", timeout=60000)
             
-            # ログイン状態の確認（ログインページにリダイレクトされた場合はセッション切れ）
-            if "/login" in page.url:
-                browser.close()
-                return {
-                    "success": False,
-                    "url": "",
-                    "status": "auth_error",
-                    "message": "セッションCookieの有効期限が切れています。再度 login_note_local.py でログインしてください。"
-                }
+            # ログイン状態の確認
+            post_btn = page.locator('button:has-text("投稿"), a:has-text("投稿"), [aria-label="投稿"]').first
+            if post_btn.count() == 0:
+                # /login へのリダイレクト確認
+                if "/login" in page.url:
+                    browser.close()
+                    return {
+                        "success": False,
+                        "url": "",
+                        "status": "auth_error",
+                        "message": "セッションCookieの有効期限が切れています。再度 login_note_local.py でログインしてください。"
+                    }
+                # 直接 /notes/new へフォールバック
+                print("   投稿ボタンを直接アクセスで代替します...")
+                page.goto("https://note.com/notes/new", wait_until="networkidle", timeout=60000)
+            else:
+                print("2. 投稿ボタンをクリックしてエディタを開いています...")
+                post_btn.click()
+                time.sleep(2)
 
             # 2. タイトルの入力
-            print("2. タイトルを入力しています...")
-            title_selector = 'textarea[placeholder*="タイトル"], [data-placeholder*="タイトル"], textarea.o-noteEditorHeader__title'
+            print("3. タイトルを入力しています...")
+            title_selector = 'textarea[placeholder*="記事タイトル"], [data-placeholder*="記事タイトル"], textarea'
             page.wait_for_selector(title_selector, timeout=30000)
             title_elem = page.locator(title_selector).first
             title_elem.fill(title)
@@ -97,7 +107,7 @@ def publish_to_note(
 
             # 3. ヘッダー画像（見出し画像）のアップロード
             if header_image_path and os.path.exists(header_image_path):
-                print(f"3. ヘッダー画像をアップロードしています: {header_image_path}")
+                print(f"4. ヘッダー画像をアップロードしています: {header_image_path}")
                 try:
                     # ファイル選択用の input を探す
                     file_input = page.locator('input[type="file"]').first
@@ -108,15 +118,15 @@ def publish_to_note(
                     print(f"   [注意] ヘッダー画像のアップロードをスキップしました: {e}")
 
             # 4. 本文の入力
-            print("4. 本文を入力しています...")
+            print("5. 本文を入力しています...")
             # エディタの本文エリアにフォーカス
-            body_selector = '[data-editor-type="body"], [data-placeholder*="記事"], div.ProseMirror, .o-noteEditorBody'
+            body_selector = '[contenteditable="true"], div.ProseMirror, [data-editor-type="body"]'
+            page.wait_for_selector(body_selector, timeout=30000)
             body_elem = page.locator(body_selector).first
             body_elem.click()
             time.sleep(1)
             
             # クリップボード経由でMarkdownテキストをペースト
-            # ブラウザのクリップボードAPIまたはProseMirrorへの流し込み
             page.evaluate(
                 """({ text }) => {
                     const dt = new DataTransfer();
@@ -134,8 +144,8 @@ def publish_to_note(
 
             # 5. 公開または下書き保存
             if publish:
-                print("5. 公開設定に進んでいます...")
-                publish_btn = page.locator('button:has-text("公開に進む"), button:has-text("公開設定")').first
+                print("6. 公開設定に進んでいます...")
+                publish_btn = page.locator('button:has-text("公開に進む")').first
                 publish_btn.wait_for(state="visible", timeout=15000)
                 publish_btn.click()
                 time.sleep(2)
@@ -163,7 +173,7 @@ def publish_to_note(
                 # 投稿完了後のURL遷移を待機（https://note.com/<user>/n/<note_id>）
                 page.wait_for_url(lambda u: "/n/n" in u or "/notes/" not in u, timeout=30000)
                 published_url = page.url
-                print(f"✅ 公開が完了しました: {published_url}")
+                print(f"[OK] 公開が完了しました: {published_url}")
                 
                 browser.close()
                 return {
@@ -173,15 +183,14 @@ def publish_to_note(
                     "message": f"記事が正常に公開されました: {published_url}"
                 }
             else:
-                print("5. 下書き保存を実行しています...")
-                # noteは自動保存されるが、明示的な下書き保存ボタンがあれば押す
-                save_btn = page.locator('button:has-text("下書き保存"), button:has-text("保存")').first
+                print("6. 下書き保存を実行しています...")
+                save_btn = page.locator('button:has-text("下書き保存")').first
                 if save_btn.count() > 0 and save_btn.is_visible():
                     save_btn.click()
-                    time.sleep(2)
+                    time.sleep(3)
                     
                 draft_url = page.url
-                print(f"✅ 下書き保存が完了しました: {draft_url}")
+                print(f"[OK] 下書き保存が完了しました: {draft_url}")
                 browser.close()
                 return {
                     "success": True,
@@ -196,7 +205,7 @@ def publish_to_note(
             os.makedirs(os.path.dirname(screenshot_path), exist_ok=True)
             try:
                 page.screenshot(path=screenshot_path)
-                print(f"📸 エラー画面のスクリーンショットを保存しました: {screenshot_path}")
+                print(f"[注意] エラー画面のスクリーンショットを保存しました: {screenshot_path}")
             except Exception:
                 pass
                 
