@@ -6,3 +6,4 @@ requests
 feedparser
 Pillow
 python-dotenv
+playwright

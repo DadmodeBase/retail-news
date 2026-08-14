@@ -183,24 +183,23 @@ def _matches_keywords(entry, keywords):
     text = (entry.title + " " + entry.get("summary", "")).upper()
     return any(k.upper() in text for k in keywords)
 
-DRUGSTORE_GOOGLE_NEWS_FEED = "https://news.google.com/rss/search?q=ドラッグストア+OR+DgS+OR+調剤薬局&hl=ja&gl=JP&ceid=JP:ja"
-
+# 予備フィード（フォールバック用）
 ALL_FALLBACK_FEEDS = [
     "https://lnews.jp/feed",
     "https://www.ryutsuu.biz/feed",
     "https://diamond-rm.net/feed/",
-    DRUGSTORE_GOOGLE_NEWS_FEED,
     "https://prtimes.jp/index.rdf"
 ]
 
 def fetch_latest_news(rss_feeds, target_days, history, now_jst, keywords=None, fallback_feeds=None):
-    print(f"ニュースを収集しています (対象期間: 当日含む直近{target_days}日間)...")
+    print(f"ニュースを収集しています (対象期間: 前日を含む直近{target_days}日間)...")
     if keywords:
         print(f"キーワードフィルタ有効: {len(keywords)}個のキーワードでPR TIMES記事を絞り込み")
     
     def _fetch(feeds, days):
         articles = []
-        target_dates = [(now_jst - datetime.timedelta(days=i)).date() for i in range(0, days + 1)]
+        # 前日（1日前）から days 日前までを対象にする（当日未更新によるエラーを防止）
+        target_dates = [(now_jst - datetime.timedelta(days=i)).date() for i in range(1, days + 1)]
         seen_titles = set(history)
         
         for url in feeds:
@@ -627,22 +626,21 @@ def main():
             outputs = generate_weekly_summary(now_jst)
         else: # 平日・土曜：通常レポート
             # 曜日別ソース設定
-            if weekday == 0: # 月曜：LNEWS & ダイヤモンドRM & 流通ニュース（週末分を含めて3日間）
-                feeds, target_days = ["https://lnews.jp/feed", "https://diamond-rm.net/feed/", "https://www.ryutsuu.biz/feed", DRUGSTORE_GOOGLE_NEWS_FEED], 3
+            if weekday == 0: # 月曜：LNEWS & ダイヤモンドRM & 流通ニュース（週末分を含めて前日〜3日前）
+                feeds, target_days = ["https://lnews.jp/feed", "https://diamond-rm.net/feed/", "https://www.ryutsuu.biz/feed"], 3
             elif weekday in [2, 3]: # 水・木：流通ニュース & LNEWS & ダイヤモンドRM
-                feeds, target_days = ["https://www.ryutsuu.biz/feed", "https://lnews.jp/feed", "https://diamond-rm.net/feed/", DRUGSTORE_GOOGLE_NEWS_FEED], 1
+                feeds, target_days = ["https://www.ryutsuu.biz/feed", "https://lnews.jp/feed", "https://diamond-rm.net/feed/"], 1
             elif weekday == 4: # 金曜：LNEWS & ダイヤモンドRM & 流通ニュース
-                feeds, target_days = ["https://lnews.jp/feed", "https://diamond-rm.net/feed/", "https://www.ryutsuu.biz/feed", DRUGSTORE_GOOGLE_NEWS_FEED], 1
+                feeds, target_days = ["https://lnews.jp/feed", "https://diamond-rm.net/feed/", "https://www.ryutsuu.biz/feed"], 1
             elif weekday in [1, 5]: # 火・土：PR TIMES（公式RSSからキーワードフィルタリング）+ フォールバック
                 feeds, target_days = [
                     "https://prtimes.jp/index.rdf",
                     "https://lnews.jp/feed",
                     "https://www.ryutsuu.biz/feed",
                     "https://diamond-rm.net/feed/",
-                    DRUGSTORE_GOOGLE_NEWS_FEED,
                 ], 1
             else: # その他フォールバック
-                feeds, target_days = ["https://lnews.jp/feed", "https://www.ryutsuu.biz/feed", "https://diamond-rm.net/feed/", DRUGSTORE_GOOGLE_NEWS_FEED], 1
+                feeds, target_days = ["https://lnews.jp/feed", "https://www.ryutsuu.biz/feed", "https://diamond-rm.net/feed/"], 1
             
             # PR TIMESのみキーワードフィルタリングを適用（他のRSSは全記事対象）
             kw_filter = PRTIMES_KEYWORDS if weekday in [1, 5] else None
@@ -670,9 +668,33 @@ def main():
         attachments = [md_report_path]
         if header_result: attachments.append(header_path)
         
+        # noteへの自動投稿（Cookieが設定されている場合のみ実行）
+        note_url = ""
+        try:
+            from note_publisher import publish_to_note
+            tags = ["リテール", "小売", "ドラッグストア", "スーパー", "マーケティング", "DX"]
+            publish_result = publish_to_note(
+                title=outputs.get('article_title', f"【日刊】リテール最新トレンド - {date_str}"),
+                body_text=outputs.get('daily_report', ''),
+                header_image_path=header_path if os.path.exists(header_path) else None,
+                tags=tags,
+                publish=True,
+                headless=True
+            )
+            if publish_result.get("success"):
+                note_url = publish_result.get("url", "")
+                print(f"🎉 noteへの自動投稿が完了しました: {note_url}")
+            else:
+                print(f"⚠️ note自動投稿スキップ/失敗: {publish_result.get('message')}")
+        except Exception as e:
+            print(f"⚠️ note自動投稿処理で例外が発生しました（後続処理を継続します）: {e}")
+
         # X投稿案の生成
         x_posts_text = generate_x_posts(outputs.get('daily_report', ''), date_str)
-        email_body = "本日のレポートを添付します。\n\n" + x_posts_text
+        email_body = "本日のレポートを添付します。\n\n"
+        if note_url:
+            email_body += f"【公開済みnote URL】\n{note_url}\n\n"
+        email_body += x_posts_text
         
         send_email(f"【日刊】{outputs.get('article_title', date_str)} - {date_str}", email_body, attachments)
         print("すべての工程が正常に終了しました。")
