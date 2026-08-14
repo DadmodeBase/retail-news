@@ -109,11 +109,27 @@ def publish_to_note(
             if header_image_path and os.path.exists(header_image_path):
                 print(f"4. ヘッダー画像をアップロードしています: {header_image_path}")
                 try:
-                    # ファイル選択用の input を探す
-                    file_input = page.locator('input[type="file"]').first
-                    if file_input.count() > 0:
-                        file_input.set_input_files(header_image_path)
-                        time.sleep(3)  # アップロード完了待機
+                    # ヘッダー画像アイコンをクリックしてメニューを表示
+                    header_img_btn = page.locator('main button[data-id="ButtonIcon"]').first
+                    if header_img_btn.count() > 0 and header_img_btn.is_visible():
+                        header_img_btn.click()
+                        time.sleep(1)
+                        
+                        # 「画像をアップロード」ボタンをクリックしてファイル選択ダイアログに渡す
+                        upload_btn = page.locator('button:has-text("画像をアップロード")').first
+                        with page.expect_file_chooser(timeout=10000) as fc_info:
+                            upload_btn.click()
+                        file_chooser = fc_info.value
+                        file_chooser.set_files(header_image_path)
+                        time.sleep(3)
+                        
+                        # トリミングダイアログの「保存」ボタンをクリック
+                        crop_save_btn = page.locator('div.ReactModalPortal button:has-text("保存"), button:has-text("決定")').first
+                        if crop_save_btn.count() > 0 and crop_save_btn.is_visible():
+                            crop_save_btn.click()
+                            time.sleep(3)
+                            
+                        print(f"   [OK] ヘッダー画像のアップロードが完了しました")
                 except Exception as e:
                     print(f"   [注意] ヘッダー画像のアップロードをスキップしました: {e}")
 
