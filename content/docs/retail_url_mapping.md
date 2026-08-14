@@ -87,3 +87,4 @@
 | `2026-08-11-note_imported_n24d725937026.md` | 【スーパー3社比較】真夏の売場VMD解剖。なぜ単発POPは埋もれ、「全館統一テーマPOP」は買い手の足を止めるのか？ | https://note.com/cool_hyena6987/n/n24d725937026 |
 | `2026-08-11-note_imported_n47b0868720fc.md` | 【コピペ&スマホ写真で簡単】タイミー導入店舗のための「即戦力化マニュアル」＆「優先度タスクシート」作成パッケージ | https://note.com/cool_hyena6987/n/n47b0868720fc |
 | `2026-08-13-note_imported_n025ad1c82897.md` | 【ハンズ】【Amazon】【ドラッグストア業界】デジタル接客・物流網整備と店舗保安対策の最前線 | https://note.com/cool_hyena6987/n/n025ad1c82897 |
+| `2026-08-13-note_imported_nfb8a7ca96439.md` | 【ウエルシア／三菱商事／メディパル】ドラッグストアDXと流通再編に見るフィールドマーケティングの未来 | https://note.com/cool_hyena6987/n/nfb8a7ca96439 |
