@@ -88,3 +88,5 @@
 | `2026-08-11-note_imported_n47b0868720fc.md` | 【コピペ&スマホ写真で簡単】タイミー導入店舗のための「即戦力化マニュアル」＆「優先度タスクシート」作成パッケージ | https://note.com/cool_hyena6987/n/n47b0868720fc |
 | `2026-08-13-note_imported_n025ad1c82897.md` | 【ハンズ】【Amazon】【ドラッグストア業界】デジタル接客・物流網整備と店舗保安対策の最前線 | https://note.com/cool_hyena6987/n/n025ad1c82897 |
 | `2026-08-13-note_imported_nfb8a7ca96439.md` | 【ウエルシア／三菱商事／メディパル】ドラッグストアDXと流通再編に見るフィールドマーケティングの未来 | https://note.com/cool_hyena6987/n/nfb8a7ca96439 |
+| `2026-08-14-note_imported_nb3556f980abd.md` | 【マツキヨココカラ】【スギ薬局】【トライアルHD】ドラッグストアのヘルスケア・ビューティ戦略とディスカウントストアの規模拡大がもたらす小売・フィールドマーケティングの新潮流 | https://note.com/cool_hyena6987/n/nb3556f980abd |
+| `2026-08-15-note_imported_n0af969f205a5.md` | 【店長の負担を激減】初めて来るタイミーを「指示待ち棒立ち」にさせない2つの現場ルール | https://note.com/cool_hyena6987/n/n0af969f205a5 |
