@@ -90,3 +90,6 @@
 | `2026-08-13-note_imported_nfb8a7ca96439.md` | 【ウエルシア／三菱商事／メディパル】ドラッグストアDXと流通再編に見るフィールドマーケティングの未来 | https://note.com/cool_hyena6987/n/nfb8a7ca96439 |
 | `2026-08-14-note_imported_nb3556f980abd.md` | 【マツキヨココカラ】【スギ薬局】【トライアルHD】ドラッグストアのヘルスケア・ビューティ戦略とディスカウントストアの規模拡大がもたらす小売・フィールドマーケティングの新潮流 | https://note.com/cool_hyena6987/n/nb3556f980abd |
 | `2026-08-15-note_imported_n0af969f205a5.md` | 【店長の負担を激減】初めて来るタイミーを「指示待ち棒立ち」にさせない2つの現場ルール | https://note.com/cool_hyena6987/n/n0af969f205a5 |
+| `2026-08-15-note_imported_n367cd850a956.md` | 【タイミー】失敗したくない人のための「働きやすい求人」の選び方（飲食店偏） | https://note.com/cool_hyena6987/n/n367cd850a956 |
+| `2026-08-15-note_imported_n2ed5005ad27c.md` | 【マツキヨココカラ＆カンパニー／ビックカメラ／イオンリテール】フィールドマーケティング・デイリーレポート | https://note.com/cool_hyena6987/n/n2ed5005ad27c |
+| `2026-08-16-note_imported_n7b0c22c2b43d.md` | 「肉」を売る店と「献立」を売る店。距離100mのスーパー2店舗から学ぶ、戦わない売場戦略 | https://note.com/cool_hyena6987/n/n7b0c22c2b43d |
