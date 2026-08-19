@@ -95,3 +95,4 @@
 | `2026-08-16-note_imported_n7b0c22c2b43d.md` | 「肉」を売る店と「献立」を売る店。距離100mのスーパー2店舗から学ぶ、戦わない売場戦略 | https://note.com/cool_hyena6987/n/n7b0c22c2b43d |
 | `2026-08-16-note_imported_n2e156e361a62.md` | 【週間まとめ】暮らしを変えるリテール最新トレンド（08/16週） | https://note.com/cool_hyena6987/n/n2e156e361a62 |
 | `2026-08-16-note_imported_n0a0d6db8303f.md` | Gemini Sparkで旅行予約メールを全自動整理！プロンプト1行で「旅のしおり」が完成して感動した話 | https://note.com/cool_hyena6987/n/n0a0d6db8303f |
+| `2026-08-18-note_imported_nc52342fff43a.md` | 【花王・イオン・西友】流通・メーカーにおける効率化と需要変化への即応戦略 | https://note.com/cool_hyena6987/n/nc52342fff43a |
