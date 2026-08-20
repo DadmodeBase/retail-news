@@ -96,3 +96,4 @@
 | `2026-08-16-note_imported_n2e156e361a62.md` | 【週間まとめ】暮らしを変えるリテール最新トレンド（08/16週） | https://note.com/cool_hyena6987/n/n2e156e361a62 |
 | `2026-08-16-note_imported_n0a0d6db8303f.md` | Gemini Sparkで旅行予約メールを全自動整理！プロンプト1行で「旅のしおり」が完成して感動した話 | https://note.com/cool_hyena6987/n/n0a0d6db8303f |
 | `2026-08-18-note_imported_nc52342fff43a.md` | 【花王・イオン・西友】流通・メーカーにおける効率化と需要変化への即応戦略 | https://note.com/cool_hyena6987/n/nc52342fff43a |
+| `2026-08-19-note_imported_n266c275b604c.md` | 【PPIH・ロフト・トライアルHD】消費トレンドの変化を捉える小売チェーンの最新成長戦略と店舗展開動向 | https://note.com/cool_hyena6987/n/n266c275b604c |
