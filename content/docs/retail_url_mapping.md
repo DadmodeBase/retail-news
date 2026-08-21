@@ -97,3 +97,4 @@
 | `2026-08-16-note_imported_n0a0d6db8303f.md` | Gemini Sparkで旅行予約メールを全自動整理！プロンプト1行で「旅のしおり」が完成して感動した話 | https://note.com/cool_hyena6987/n/n0a0d6db8303f |
 | `2026-08-18-note_imported_nc52342fff43a.md` | 【花王・イオン・西友】流通・メーカーにおける効率化と需要変化への即応戦略 | https://note.com/cool_hyena6987/n/nc52342fff43a |
 | `2026-08-19-note_imported_n266c275b604c.md` | 【PPIH・ロフト・トライアルHD】消費トレンドの変化を捉える小売チェーンの最新成長戦略と店舗展開動向 | https://note.com/cool_hyena6987/n/n266c275b604c |
+| `2026-08-20-note_imported_nd699c920987c.md` | 【コスモス薬品・ファミリーマート・PPIH】流通・小売りにおける新業態展開とサービス融合 | https://note.com/cool_hyena6987/n/nd699c920987c |
