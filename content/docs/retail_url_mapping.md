@@ -98,3 +98,4 @@
 | `2026-08-18-note_imported_nc52342fff43a.md` | 【花王・イオン・西友】流通・メーカーにおける効率化と需要変化への即応戦略 | https://note.com/cool_hyena6987/n/nc52342fff43a |
 | `2026-08-19-note_imported_n266c275b604c.md` | 【PPIH・ロフト・トライアルHD】消費トレンドの変化を捉える小売チェーンの最新成長戦略と店舗展開動向 | https://note.com/cool_hyena6987/n/n266c275b604c |
 | `2026-08-20-note_imported_nd699c920987c.md` | 【コスモス薬品・ファミリーマート・PPIH】流通・小売りにおける新業態展開とサービス融合 | https://note.com/cool_hyena6987/n/nd699c920987c |
+| `2026-08-21-note_imported_n1e9cbe678904.md` | 【JR西日本】【カインズ】【ツルヤ】リアル店舗の価値最大化に向けたデジタル融合とスクラップ＆ビルドの推進 | https://note.com/cool_hyena6987/n/n1e9cbe678904 |
