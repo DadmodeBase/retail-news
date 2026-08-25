@@ -101,3 +101,4 @@
 | `2026-08-21-note_imported_n1e9cbe678904.md` | 【JR西日本】【カインズ】【ツルヤ】リアル店舗の価値最大化に向けたデジタル融合とスクラップ＆ビルドの推進 | https://note.com/cool_hyena6987/n/n1e9cbe678904 |
 | `2026-08-22-note_imported_n9281c772bd74.md` | 【トライアル】【ローソン】【ベイシア】小売業界の構造変革を示す次世代リテール戦略 | https://note.com/cool_hyena6987/n/n9281c772bd74 |
 | `2026-08-23-note_imported_nc7250b2fc640.md` | 【週間まとめ】暮らしを変えるリテール最新トレンド（08/23週） | https://note.com/cool_hyena6987/n/nc7250b2fc640 |
+| `2026-08-24-note_imported_n5f212b906313.md` | 【クスリのアオキ／ファミリーマート／船井総研】流通・小売の構造変革と最先端店舗マーケティング戦略 | https://note.com/cool_hyena6987/n/n5f212b906313 |
