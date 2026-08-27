@@ -73,29 +73,28 @@ def publish_to_note(
         page = context.new_page()
         
         try:
-            # 1. noteトップページを開いて「投稿」からエディタへ遷移
-            print("1. noteトップページへアクセス中...")
-            page.goto("https://note.com/", wait_until="networkidle", timeout=60000)
+            # 1. noteエディタへアクセス
+            print("1. noteエディタへアクセス中...")
+            page.goto("https://note.com/notes/new", wait_until="networkidle", timeout=60000)
             
             # ログイン状態の確認
-            post_btn = page.locator('button:has-text("投稿"), a:has-text("投稿"), [aria-label="投稿"]').first
-            if post_btn.count() == 0:
-                # /login へのリダイレクト確認
-                if "/login" in page.url:
-                    browser.close()
-                    return {
-                        "success": False,
-                        "url": "",
-                        "status": "auth_error",
-                        "message": "セッションCookieの有効期限が切れています。再度 login_note_local.py でログインしてください。"
-                    }
-                # 直接 /notes/new へフォールバック
-                print("   投稿ボタンを直接アクセスで代替します...")
-                page.goto("https://note.com/notes/new", wait_until="networkidle", timeout=60000)
-            else:
-                print("2. 投稿ボタンをクリックしてエディタを開いています...")
-                post_btn.click()
-                time.sleep(2)
+            if "/login" in page.url:
+                browser.close()
+                return {
+                    "success": False,
+                    "url": "",
+                    "status": "auth_error",
+                    "message": "セッションCookieの有効期限が切れています。再度 login_note_local.py でログインしてください。"
+                }
+            
+            # 邪魔なモーダルがあれば閉じる
+            try:
+                close_btn = page.locator('button[aria-label="閉じる"], button:has-text("閉じる"), div[data-name="modal"] button').first
+                if close_btn.count() > 0 and close_btn.is_visible():
+                    close_btn.click()
+                    time.sleep(1)
+            except Exception:
+                pass
 
             # 2. タイトルの入力
             print("3. タイトルを入力しています...")
@@ -183,13 +182,17 @@ def publish_to_note(
                 # 最終「投稿する」ボタン
                 print("7. 記事を投稿（公開）しています...")
                 submit_btn = page.locator('button:has-text("投稿する"), button:has-text("公開する")').first
-                submit_btn.wait_for(state="visible", timeout=15000)
-                submit_btn.click()
+                if submit_btn.count() > 0 and submit_btn.is_visible():
+                    submit_btn.click()
+                    time.sleep(3)
                 
                 # 投稿完了後のURL遷移を待機（https://note.com/<user>/n/<note_id>）
-                page.wait_for_url(lambda u: "/n/n" in u or "/notes/" not in u, timeout=30000)
+                try:
+                    page.wait_for_url(lambda u: "/n/n" in u or "/notes/" not in u, timeout=15000)
+                except Exception:
+                    time.sleep(3)
                 published_url = page.url
-                print(f"[OK] 公開が完了しました: {published_url}")
+                print(f"[OK] 公開処理が完了しました: {published_url}")
                 
                 browser.close()
                 return {

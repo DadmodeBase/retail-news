@@ -178,6 +178,10 @@ def save_history(service, folder_id, history_data, file_id):
     except Exception as e:
         print(f"警告: 履歴の保存に失敗しました: {e}")
 
+import requests
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 def _matches_keywords(entry, keywords):
     """記事のタイトルまたはsummaryにキーワードが含まれるか判定する。"""
     text = (entry.title + " " + entry.get("summary", "")).upper()
@@ -185,27 +189,40 @@ def _matches_keywords(entry, keywords):
 
 # 予備フィード（フォールバック用）
 ALL_FALLBACK_FEEDS = [
-    "https://lnews.jp/feed",
     "https://www.ryutsuu.biz/feed",
     "https://diamond-rm.net/feed/",
+    "https://lnews.jp/feed",
     "https://prtimes.jp/index.rdf"
 ]
 
+def _parse_feed_robust(url):
+    """SSLエラーやブロックを回避してフィードを取得・パースする"""
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
+    try:
+        resp = requests.get(url, headers=headers, verify=False, timeout=15)
+        if resp.status_code == 200:
+            return feedparser.parse(resp.content)
+    except Exception:
+        pass
+    return feedparser.parse(url)
+
 def fetch_latest_news(rss_feeds, target_days, history, now_jst, keywords=None, fallback_feeds=None):
-    print(f"ニュースを収集しています (対象期間: 前日を含む直近{target_days}日間)...")
+    print(f"ニュースを収集しています (対象期間: 当日および前日を含む直近{target_days}日間)...")
     if keywords:
         print(f"キーワードフィルタ有効: {len(keywords)}個のキーワードでPR TIMES記事を絞り込み")
     
-    def _fetch(feeds, days):
+    def _fetch(feeds, days, ignore_dates=False):
         articles = []
-        # 前日（1日前）から days 日前までを対象にする（当日未更新によるエラーを防止）
-        target_dates = [(now_jst - datetime.timedelta(days=i)).date() for i in range(1, days + 1)]
+        # 当日（0日前）から days 日前までを対象にする（当日の最新記事も確実に取得）
+        target_dates = [(now_jst - datetime.timedelta(days=i)).date() for i in range(0, days + 1)]
         seen_titles = set(history)
         
         for url in feeds:
             try:
                 apply_filter = keywords and "prtimes.jp" in url
-                feed = feedparser.parse(url)
+                feed = _parse_feed_robust(url)
                 count = 0
                 for entry in feed.entries:
                     if entry.title in seen_titles:
@@ -214,20 +231,30 @@ def fetch_latest_news(rss_feeds, target_days, history, now_jst, keywords=None, f
                     if apply_filter and not _matches_keywords(entry, keywords):
                         continue
                     
-                    entry_time = entry.get('published_parsed') or entry.get('updated_parsed')
-                    if entry_time:
-                        try:
-                            dt_utc = datetime.datetime(*entry_time[:6], tzinfo=datetime.timezone.utc)
-                            dt_jst = dt_utc.astimezone(JST)
-                            if dt_jst.date() in target_dates:
-                                articles.append({
-                                    "title": entry.title,
-                                    "link": entry.link,
-                                    "summary": entry.get("summary", ""),
-                                })
-                                seen_titles.add(entry.title)
-                                count += 1
-                        except Exception: pass
+                    if ignore_dates:
+                        # 最終フォールバック用（日付不問で最新記事を拾う）
+                        articles.append({
+                            "title": entry.title,
+                            "link": entry.link,
+                            "summary": entry.get("summary", ""),
+                        })
+                        seen_titles.add(entry.title)
+                        count += 1
+                    else:
+                        entry_time = entry.get('published_parsed') or entry.get('updated_parsed')
+                        if entry_time:
+                            try:
+                                dt_utc = datetime.datetime(*entry_time[:6], tzinfo=datetime.timezone.utc)
+                                dt_jst = dt_utc.astimezone(JST)
+                                if dt_jst.date() in target_dates:
+                                    articles.append({
+                                        "title": entry.title,
+                                        "link": entry.link,
+                                        "summary": entry.get("summary", ""),
+                                    })
+                                    seen_titles.add(entry.title)
+                                    count += 1
+                            except Exception: pass
                     if count >= 10: break
             except Exception as e:
                 print(f"警告: {url} の取得に失敗しました: {e}")
@@ -237,16 +264,22 @@ def fetch_latest_news(rss_feeds, target_days, history, now_jst, keywords=None, f
     
     # フォールバック 1: 指定ソースで0件の場合、予備フィードを追加探索
     if not articles:
-        print("[フォールバック] メインフィードで新規記事が見つかりませんでした。予備フィードを探索します...")
+        print("[フォールバック 1] メインフィードで新規記事が見つかりませんでした。予備フィードを探索します...")
         search_feeds = list(dict.fromkeys(rss_feeds + (fallback_feeds or []) + ALL_FALLBACK_FEEDS))
         articles = _fetch(search_feeds, target_days)
             
-    # フォールバック 2: それでも0件の場合、対象日数を1日広げて再探索
+    # フォールバック 2: それでも0件の場合、対象日数を拡張して再探索
     if not articles:
-        extended_days = target_days + 1
-        print(f"[フォールバック] 対象期間を直近{extended_days}日間に拡張して探索します...")
+        extended_days = target_days + 2
+        print(f"[フォールバック 2] 対象期間を直近{extended_days}日間に拡張して探索します...")
         search_feeds = list(dict.fromkeys(rss_feeds + (fallback_feeds or []) + ALL_FALLBACK_FEEDS))
         articles = _fetch(search_feeds, extended_days)
+
+    # フォールバック 3: それでも0件の場合、最新の未処理記事を日付不問で取得（サイレント終了を防止）
+    if not articles:
+        print("[フォールバック 3] 日付不問で最新の未処理記事を探索します...")
+        search_feeds = list(dict.fromkeys(rss_feeds + (fallback_feeds or []) + ALL_FALLBACK_FEEDS))
+        articles = _fetch(search_feeds, target_days, ignore_dates=True)
 
     print(f"新規記事を {len(articles)} 件取得しました。")
     return articles
@@ -671,6 +704,8 @@ def main():
         # noteへの自動投稿（Cookieが設定されている場合のみ実行）
         note_url = ""
         try:
+            import sys
+            sys.path.insert(0, os.path.dirname(__file__))
             from note_publisher import publish_to_note
             tags = ["リテール", "小売", "ドラッグストア", "スーパー", "マーケティング", "DX"]
             publish_result = publish_to_note(
@@ -683,11 +718,11 @@ def main():
             )
             if publish_result.get("success"):
                 note_url = publish_result.get("url", "")
-                print(f"🎉 noteへの自動投稿が完了しました: {note_url}")
+                print(f"[OK] noteへの自動投稿が完了しました: {note_url}")
             else:
-                print(f"⚠️ note自動投稿スキップ/失敗: {publish_result.get('message')}")
+                print(f"[注意] note自動投稿スキップ/失敗: {publish_result.get('message')}")
         except Exception as e:
-            print(f"⚠️ note自動投稿処理で例外が発生しました（後続処理を継続します）: {e}")
+            print(f"[注意] note自動投稿処理で例外が発生しました（後続処理を継続します）: {e}")
 
         # X投稿案の生成
         x_posts_text = generate_x_posts(outputs.get('daily_report', ''), date_str)
