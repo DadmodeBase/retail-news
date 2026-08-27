@@ -316,27 +316,30 @@ def generate_contents(articles):
 【ニュースソース】
 {context}
 
-【アウトプット：デイリーレポート】
-1. タイトル（1行目）：トピックで取り上げた企業名を【】で囲んで冒頭に付ける
+【アウトプット構成ルール】
+- `article_title`: トピックで取り上げた企業名を【】で囲んで冒頭に付けた魅力的な記事タイトル（例: 【イオン／ファミマ／コープ】...）
+- `daily_report`: 記事本文（※注意: 記事タイトルは本文冒頭には含めず、1.全体概要 から書き始めてください）
+
+【本文（daily_report）の構成】
+1. 全体概要：3つのトピックを俯瞰した導入文（150文字〜200文字程度）。タイトルは不要で文章から開始。
 2. 空行
-3. 全体概要：3つのトピックを俯瞰した導入文（150文字〜200文字程度）。
-4. 各トピック（3セット）：
-    - トピックタイトル（独立した行）
+3. 各トピック（3セット）：
+    - トピックの小見出し（必ず `### ` を先頭に付けたh3小見出し形式にしてください）
     - 空行
     - ソースURL（そのまま記載。前後に空行）
     - 空行
     - 本文：専門家としての深い解説コラム（各トピック350文字程度。市場背景、フィールドマーケティングへの具体的なインパクト、今後の展望や取るべきアクションを簡潔に凝縮し、300文字〜400文字の範囲で記述してください。無駄な装飾語は排除すること）。
 
-【文体ルール】
-- レポート全体の文章量を、1600文字〜1800文字（最大でも絶対に2000文字以内）となるよう厳密に文字数を制御してください。冗長な解説は徹底的に削り、簡潔で情報密度の高い文章に仕上げてください。
-- Markdown記法は使わず、プレーンテキスト形式で。
-- 句点（。）ごとに改行し、2〜3文ごとに空行。
-- リンクはURLをそのまま記載。
+【文体・書式ルール】
+- レポート全体の文章量を、1600文字〜1800文字（最大でも絶対に2000文字以内）となるよう厳密に文字数を制御してください。
+- トピックの見出しには `### `（h3小見出し）を使用してください。
+- 句点（。）ごとに改行し、2〜3文ごとに空行を入れて読みやすくしてください。
+- リンクはURLをそのまま記載してください。
 
 出力は以下のJSON形式でお願いします。
 {{
-  "article_title": "タイトル",
-  "daily_report": "レポート全文"
+  "article_title": "タイトル（企業名を【】で囲む）",
+  "daily_report": "全体概要から始まるレポート本文全文（### 小見出しを使用）"
 }}
 """
     response = generate_content_with_retry(
@@ -347,8 +350,13 @@ def generate_contents(articles):
     )
     try:
         data = json.loads(re.search(r'\{.*\}', response.text, re.DOTALL).group())
-        if 'article_title' in data and data['article_title'] not in data['daily_report']:
-            data['daily_report'] = f"{data['article_title']}\n\n" + data['daily_report']
+        # 本文冒頭にタイトルが誤って含まれている場合は除去
+        if 'article_title' in data and 'daily_report' in data:
+            title = data['article_title'].strip()
+            body = data['daily_report'].strip()
+            if body.startswith(title):
+                body = body[len(title):].strip()
+            data['daily_report'] = body
         return data
     except Exception: return None
 
@@ -375,20 +383,24 @@ def generate_weekly_summary(now_jst):
 【過去1週間の記事内容】
 {context}
 
-【アウトプット：週間まとめレポート】
-- 文字数：2000文字程度
-- 内容：暮らしにどのような影響があるか、メリットを中心に分かりやすく解説。
-- タイトル：【週間まとめ】暮らしを変えるリテール最新トレンド（{now_jst.strftime('%m/%d')}週）
-- 構成：1. 全体俯瞰、2. 注目トピックの深掘り（3〜4つ）、3. まとめ
+【アウトプット構成ルール】
+- `article_title`: 【週間まとめ】暮らしを変えるリテール最新トレンド（{now_jst.strftime('%m/%d')}週）
+- `daily_report`: 記事本文（※注意: 記事タイトルは本文冒頭には含めず、1.全体俯瞰 から書き始めてください）
 
-【文体ルール】
-- Markdown記法禁止。プレーンテキスト形式。
+【本文（daily_report）の構成】
+1. 全体俯瞰（導入文）
+2. 注目トピックの深掘り（3〜4つ。各トピックのタイトルは必ず `### ` から始まるh3小見出しにすること）
+3. まとめ
+
+【文体・書式ルール】
+- 文字数：2000文字程度
+- トピックの見出しには `### `（h3小見出し）を使用してください。
 - 句点ごとに改行、2〜3文ごとに空行。
 
 出力は以下のJSON形式でお願いします。
 {{
   "article_title": "タイトル",
-  "daily_report": "レポート全文"
+  "daily_report": "全体俯瞰から始まるレポート本文全文（### 小見出しを使用）"
 }}
 """
     response = generate_content_with_retry(
@@ -399,8 +411,12 @@ def generate_weekly_summary(now_jst):
     )
     try:
         data = json.loads(re.search(r'\{.*\}', response.text, re.DOTALL).group())
-        if 'article_title' in data and data['article_title'] not in data['daily_report']:
-            data['daily_report'] = f"{data['article_title']}\n\n" + data['daily_report']
+        if 'article_title' in data and 'daily_report' in data:
+            title = data['article_title'].strip()
+            body = data['daily_report'].strip()
+            if body.startswith(title):
+                body = body[len(title):].strip()
+            data['daily_report'] = body
         return data
     except Exception: return None
 
