@@ -746,9 +746,11 @@ def main():
                 if not any(kw in raw_companies for kw in ["日刊", "週間まとめ", "テスト"]):
                     company_tags = [c.strip() for c in re.split(r"[/／、・\s]+", raw_companies) if c.strip()]
             
-            base_tags = ["リテール", "小売", "ドラッグストア", "スーパー", "マーケティング", "DX"]
-            # 企業名タグを優先して設定（重複排除、最大10個）
-            tags = list(dict.fromkeys(company_tags + base_tags))[:10]
+            # 必須タグ（必ず含める）
+            must_tags = ["フィールドマーケティング"]
+            base_tags = ["リテール", "マーケティング", "DX", "小売", "ドラッグストア", "スーパー"]
+            # 企業名タグ + 必須タグ + 基本タグ（重複排除、最大10個）
+            tags = list(dict.fromkeys(company_tags + must_tags + base_tags))[:10]
             print(f"noteハッシュタグ: {tags}")
             
             publish_result = publish_to_note(
@@ -756,6 +758,7 @@ def main():
                 body_text=outputs.get('daily_report', ''),
                 header_image_path=header_path if os.path.exists(header_path) else None,
                 tags=tags,
+                magazine_name="日刊リテールニュース & 流通トレンド分析",
                 publish=True,
                 headless=True
             )

@@ -36,6 +36,7 @@ def publish_to_note(
     body_text: str,
     header_image_path: str = None,
     tags: list = None,
+    magazine_name: str = None,
     publish: bool = True,
     headless: bool = True
 ) -> dict:
@@ -47,6 +48,7 @@ def publish_to_note(
         body_text: 記事本文（Markdown形式またはプレーンテキスト）
         header_image_path: 見出し画像（ヘッダー画像）のローカルパス
         tags: ハッシュタグリスト（例: ["リテール", "小売", "VMD"]）
+        magazine_name: 追加するマガジン名（例: "日刊リテールニュース & 流通トレンド分析"）
         publish: Trueなら即時公開、Falseなら下書き保存
         headless: ヘッドレスモードで実行するかどうか
         
@@ -195,6 +197,27 @@ def publish_to_note(
                                 time.sleep(0.5)
                     except Exception as e:
                         print(f"   [注意] タグ設定で例外が発生しました: {e}")
+
+                # マガジンへの追加
+                if magazine_name:
+                    print(f"6. マガジンに追加しています: {magazine_name}")
+                    try:
+                        time.sleep(1)
+                        buttons = page.locator('button:has-text("追加")')
+                        matched = False
+                        for i in range(buttons.count()):
+                            btn = buttons.nth(i)
+                            parent_text = btn.locator('xpath=ancestor::div[3]').inner_text()
+                            if magazine_name in parent_text or ("日刊リテールニュース" in parent_text and "日刊リテールニュース" in magazine_name):
+                                btn.click(force=True)
+                                time.sleep(1)
+                                print(f"   [OK] マガジン「{magazine_name}」に追加しました")
+                                matched = True
+                                break
+                        if not matched:
+                            print(f"   [注意] 指定されたマガジン「{magazine_name}」が見つかりませんでした")
+                    except Exception as e:
+                        print(f"   [注意] マガジン追加処理で例外が発生しました: {e}")
 
                 # 最終「投稿する」ボタン
                 print("7. 記事を投稿（公開）しています...")
