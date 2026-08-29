@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import datetime
 import feedparser
@@ -652,8 +653,9 @@ def sync_note_articles():
                 print("GitHub Actions環境を検知しました。自動プッシュを実行します...")
                 subprocess.run(["git", "config", "--local", "user.email", "actions@github.com"], check=True)
                 subprocess.run(["git", "config", "--local", "user.name", "github-actions[bot]"], check=True)
-                subprocess.run(["git", "add", "content/docs/retail_url_mapping.md", "content/posts/published/note_imported_*.md"], check=False)
+                subprocess.run(["git", "add", "content/docs/retail_url_mapping.md", "content/posts/published/"], check=False)
                 subprocess.run(["git", "commit", "-m", "auto: sync new note articles from RSS [skip ci]"], check=True)
+                subprocess.run(["git", "pull", "--rebase", "origin", "main"], check=False)
                 subprocess.run(["git", "push"], check=True)
                 print("最新マッピングの自動コミット＆プッシュが完了しました。")
     except Exception as e:
@@ -661,12 +663,22 @@ def sync_note_articles():
 
 def main():
     try:
+        import subprocess
+
         # note記事の自動同期処理を実行
         sync_note_articles()
         
         now_jst = datetime.datetime.now(JST)
         date_str = now_jst.strftime("%Y-%m-%d")
         weekday = now_jst.weekday() # 0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri, 5=Sat, 6=Sun
+
+        # 重複実行ガード（GitHub Actions上でのみ有効）
+        if os.getenv("GITHUB_ACTIONS"):
+            existing_report = os.path.join(TARGET_DIR, f"{date_str}-daily-report.md")
+            subprocess.run(["git", "pull", "--rebase", "origin", "main"], check=False, capture_output=True)
+            if os.path.exists(existing_report):
+                print(f"[スキップ] 本日分のレポート ({date_str}) は既に生成済みです。")
+                return
         
         service = get_drive_service() if DRIVE_FOLDER_ID else None
         history, file_id = load_history(service, DRIVE_FOLDER_ID) if service else ([], None)
@@ -753,7 +765,6 @@ def main():
         # GitHub Actions上でレポートをリポジトリに保存（日曜の週間まとめで参照するため）
         if os.getenv("GITHUB_ACTIONS"):
             try:
-                import subprocess
                 print("レポートをリポジトリに保存しています...")
                 subprocess.run(["git", "config", "--local", "user.email", "actions@github.com"], check=True)
                 subprocess.run(["git", "config", "--local", "user.name", "github-actions[bot]"], check=True)
@@ -762,6 +773,7 @@ def main():
                 result = subprocess.run(["git", "diff", "--cached", "--quiet"], capture_output=True)
                 if result.returncode != 0:
                     subprocess.run(["git", "commit", "-m", f"auto: save daily report {date_str} [skip ci]"], check=True)
+                    subprocess.run(["git", "pull", "--rebase", "origin", "main"], check=False)
                     subprocess.run(["git", "push"], check=True)
                     print("レポートの保存が完了しました。")
                 else:
@@ -770,6 +782,7 @@ def main():
                 print(f"警告: レポートの保存に失敗しました（メール送信は完了済み）: {e}")
     except Exception as e:
         traceback.print_exc()
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
