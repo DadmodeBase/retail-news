@@ -105,3 +105,5 @@
 | `2026-08-25-note_imported_nc2950b35ec84.md` | 【マツキヨココカラ・ローソン・トライアルHD】フィールドマーケティング・デイリーレポート：小売・流通市場の競争激化と成長戦略 | https://note.com/cool_hyena6987/n/nc2950b35ec84 |
 | `2026-08-26-note_imported_nb08cf95b5afd.md` | 「旨みに欠けます」と肉売場に書くスーパーの勝算。オーケーストアが16年連続顧客満足度1位であり続ける『正直マーケティング』の現場解剖 | https://note.com/cool_hyena6987/n/nb08cf95b5afd |
 | `2026-08-27-note_imported_nae646b705d62.md` | 【イオン】【ファミリーマート】【レデイ薬局】生活防衛への価格対応、店舗運営体制の刷新、ドラッグストア跡地への迅速な出店攻勢 | https://note.com/cool_hyena6987/n/nae646b705d62 |
+| `2026-08-29-note_imported_n00e19c71f98a.md` | 【スギ薬局／ローソン／スーパーバリュー】店舗体験を再定義する協業・小商圏・DX戦略 | https://note.com/cool_hyena6987/n/n00e19c71f98a |
+| `2026-08-29-note_imported_n34cf1f8fbcdb.md` | 【トライアル西友／マツモトキヨシ／コメリ】統合シナジーとラストワンマイルで進化する店舗体験と流通戦略 | https://note.com/cool_hyena6987/n/n34cf1f8fbcdb |
