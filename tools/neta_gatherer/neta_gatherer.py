@@ -735,9 +735,24 @@ def main():
             import sys
             sys.path.insert(0, os.path.dirname(__file__))
             from note_publisher import publish_to_note
-            tags = ["リテール", "小売", "ドラッグストア", "スーパー", "マーケティング", "DX"]
+            
+            article_title = outputs.get('article_title', f"【日刊】リテール最新トレンド - {date_str}")
+            
+            # 記事タイトルから企業名を自動抽出してハッシュタグに反映
+            company_tags = []
+            title_match = re.search(r"【(.*?)】", article_title)
+            if title_match:
+                raw_companies = title_match.group(1)
+                if not any(kw in raw_companies for kw in ["日刊", "週間まとめ", "テスト"]):
+                    company_tags = [c.strip() for c in re.split(r"[/／、・\s]+", raw_companies) if c.strip()]
+            
+            base_tags = ["リテール", "小売", "ドラッグストア", "スーパー", "マーケティング", "DX"]
+            # 企業名タグを優先して設定（重複排除、最大10個）
+            tags = list(dict.fromkeys(company_tags + base_tags))[:10]
+            print(f"noteハッシュタグ: {tags}")
+            
             publish_result = publish_to_note(
-                title=outputs.get('article_title', f"【日刊】リテール最新トレンド - {date_str}"),
+                title=article_title,
                 body_text=outputs.get('daily_report', ''),
                 header_image_path=header_path if os.path.exists(header_path) else None,
                 tags=tags,
