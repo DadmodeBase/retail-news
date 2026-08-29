@@ -76,7 +76,23 @@ def publish_to_note(
             # 1. noteエディタへアクセス
             print("1. noteエディタへアクセス中...")
             page.goto("https://note.com/notes/new", wait_until="load", timeout=60000)
-            time.sleep(3)
+            
+            # エディタURL（editor.note.com や /edit/、/new）へのリダイレクトを待機
+            try:
+                page.wait_for_url(re.compile(r"editor\.note\.com|/edit/|/new"), timeout=20000)
+            except Exception:
+                # リダイレクトされずダッシュボード等に留まった場合のフォールバック
+                try:
+                    post_btn = page.locator('button:has-text("投稿"), a:has-text("投稿")').first
+                    if post_btn.count() > 0 and post_btn.is_visible():
+                        post_btn.click()
+                        time.sleep(2)
+                        text_link = page.locator('a[href*="/notes/new"], button:has-text("テキスト")').first
+                        if text_link.count() > 0 and text_link.is_visible():
+                            text_link.click()
+                            page.wait_for_url(re.compile(r"editor\.note\.com|/edit/|/new"), timeout=20000)
+                except Exception as e:
+                    print(f"   [注意] 投稿ボタン経由の遷移スキップ: {e}")
             
             # ログイン状態の確認
             if "/login" in page.url:
@@ -87,22 +103,6 @@ def publish_to_note(
                     "status": "auth_error",
                     "message": "セッションCookieの有効期限が切れています。再度 login_note_local.py でログインしてください。"
                 }
-            
-            # もしエディタ以外の画面（ダッシュボード等）にいる場合、「投稿」ボタンをクリック
-            title_selector = 'textarea[placeholder*="記事タイトル"], [data-placeholder*="記事タイトル"], textarea'
-            if page.locator(title_selector).count() == 0:
-                print("   エディタ直接遷移を確認中... 投稿ボタンを検索します")
-                try:
-                    post_btn = page.locator('button:has-text("投稿"), a:has-text("投稿")').first
-                    if post_btn.count() > 0 and post_btn.is_visible():
-                        post_btn.click()
-                        time.sleep(2)
-                        text_btn = page.locator('button:has-text("テキスト"), a:has-text("テキスト")').first
-                        if text_btn.count() > 0 and text_btn.is_visible():
-                            text_btn.click()
-                            time.sleep(3)
-                except Exception as e:
-                    print(f"   [注意] 投稿ボタン操作スキップ: {e}")
 
             # 邪魔なモーダルがあれば閉じる
             try:
@@ -115,6 +115,7 @@ def publish_to_note(
 
             # 2. タイトルの入力
             print("3. タイトルを入力しています...")
+            title_selector = 'textarea[placeholder*="記事タイトル"], [data-placeholder*="記事タイトル"]'
             page.wait_for_selector(title_selector, timeout=30000)
             title_elem = page.locator(title_selector).first
             title_elem.fill(title)
