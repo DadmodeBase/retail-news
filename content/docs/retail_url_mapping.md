@@ -107,3 +107,4 @@
 | `2026-08-27-note_imported_nae646b705d62.md` | 【イオン】【ファミリーマート】【レデイ薬局】生活防衛への価格対応、店舗運営体制の刷新、ドラッグストア跡地への迅速な出店攻勢 | https://note.com/cool_hyena6987/n/nae646b705d62 |
 | `2026-08-29-note_imported_n00e19c71f98a.md` | 【スギ薬局／ローソン／スーパーバリュー】店舗体験を再定義する協業・小商圏・DX戦略 | https://note.com/cool_hyena6987/n/n00e19c71f98a |
 | `2026-08-29-note_imported_n34cf1f8fbcdb.md` | 【トライアル西友／マツモトキヨシ／コメリ】統合シナジーとラストワンマイルで進化する店舗体験と流通戦略 | https://note.com/cool_hyena6987/n/n34cf1f8fbcdb |
+| `2026-08-30-note_imported_n6d53aef9946a.md` | 【週間まとめ】暮らしを変えるリテール最新トレンド（08/30週） | https://note.com/cool_hyena6987/n/n6d53aef9946a |
