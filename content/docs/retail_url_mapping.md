@@ -108,3 +108,4 @@
 | `2026-08-29-note_imported_n00e19c71f98a.md` | 【スギ薬局／ローソン／スーパーバリュー】店舗体験を再定義する協業・小商圏・DX戦略 | https://note.com/cool_hyena6987/n/n00e19c71f98a |
 | `2026-08-29-note_imported_n34cf1f8fbcdb.md` | 【トライアル西友／マツモトキヨシ／コメリ】統合シナジーとラストワンマイルで進化する店舗体験と流通戦略 | https://note.com/cool_hyena6987/n/n34cf1f8fbcdb |
 | `2026-08-30-note_imported_n6d53aef9946a.md` | 【週間まとめ】暮らしを変えるリテール最新トレンド（08/30週） | https://note.com/cool_hyena6987/n/n6d53aef9946a |
+| `2026-08-31-note_imported_nf91661f641f2.md` | 【イオン／ツルハ／アイリスオーヤマ】生活防衛ニーズに応える店頭価格戦略と最新の売場創出トレンド | https://note.com/cool_hyena6987/n/nf91661f641f2 |
