@@ -77,7 +77,10 @@ def publish_to_note(
         try:
             # 1. noteエディタへアクセス
             print("1. noteエディタへアクセス中...")
-            page.goto("https://note.com/notes/new", wait_until="load", timeout=60000)
+            try:
+                page.goto("https://editor.note.com/new", wait_until="load", timeout=60000)
+            except Exception:
+                page.goto("https://note.com/notes/new", wait_until="load", timeout=60000)
             
             # エディタURL（editor.note.com や /edit/、/new）へのリダイレクトを待機
             try:
@@ -189,10 +192,13 @@ def publish_to_note(
                     print(f"6. ハッシュタグを設定しています: {tags}")
                     try:
                         tag_input = page.locator('input[placeholder*="タグ"], input[placeholder*="#"]').first
-                        if tag_input.count() > 0:
+                        if tag_input.count() > 0 and tag_input.is_visible():
                             for tag in tags:
-                                clean_tag = tag.lstrip("#")
+                                clean_tag = tag.lstrip("#").strip()
+                                if not clean_tag:
+                                    continue
                                 tag_input.fill(clean_tag)
+                                time.sleep(0.3)
                                 page.keyboard.press("Enter")
                                 time.sleep(0.5)
                     except Exception as e:
@@ -203,36 +209,75 @@ def publish_to_note(
                     print(f"6. マガジンに追加しています: {magazine_name}")
                     try:
                         time.sleep(1)
-                        buttons = page.locator('button:has-text("追加")')
-                        matched = False
-                        for i in range(buttons.count()):
-                            btn = buttons.nth(i)
-                            parent_text = btn.locator('xpath=ancestor::div[3]').inner_text()
-                            if magazine_name in parent_text or ("日刊リテールニュース" in parent_text and "日刊リテールニュース" in magazine_name):
-                                btn.click(force=True)
-                                time.sleep(1)
-                                print(f"   [OK] マガジン「{magazine_name}」に追加しました")
-                                matched = True
-                                break
-                        if not matched:
-                            print(f"   [注意] 指定されたマガジン「{magazine_name}」が見つかりませんでした")
+                        # 対象マガジンの行にある「追加」ボタンをピンポイントで取得
+                        mag_btn = page.locator('div').filter(has_text=magazine_name).locator('button:has-text("追加")').first
+                        if mag_btn.count() > 0 and mag_btn.is_visible():
+                            mag_btn.click()
+                            time.sleep(1)
+                            print(f"   [OK] マガジン「{magazine_name}」に追加しました")
+                        else:
+                            # フォールバック走査
+                            buttons = page.locator('button:has-text("追加")')
+                            matched = False
+                            for i in range(buttons.count()):
+                                btn = buttons.nth(i)
+                                parent_text = btn.locator('xpath=ancestor::div[2]').inner_text()
+                                if magazine_name in parent_text or ("日刊リテールニュース" in parent_text and "日刊リテールニュース" in magazine_name):
+                                    btn.click(force=True)
+                                    time.sleep(1)
+                                    print(f"   [OK] マガジン「{magazine_name}」に追加しました（フォールバック）")
+                                    matched = True
+                                    break
+                            if not matched:
+                                print(f"   [注意] 指定されたマガジン「{magazine_name}」が見つかりませんでした")
                     except Exception as e:
                         print(f"   [注意] マガジン追加処理で例外が発生しました: {e}")
 
                 # 最終「投稿する」ボタン
                 print("7. 記事を投稿（公開）しています...")
-                submit_btn = page.locator('button:has-text("投稿する"), button:has-text("公開する")').first
-                if submit_btn.count() > 0 and submit_btn.is_visible():
-                    submit_btn.click()
-                    time.sleep(3)
+                page.evaluate("window.scrollTo(0, 0)")
+                time.sleep(1)
                 
-                # 投稿完了後のURL遷移を待機（https://note.com/<user>/n/<note_id>）
+                submit_btn = page.locator('button:has-text("投稿する")').first
+                if submit_btn.count() == 0 or not submit_btn.is_visible():
+                    submit_btn = page.locator('button:has-text("公開する")').first
+                    
+                submit_btn.wait_for(state="visible", timeout=15000)
+                submit_btn.click()
+                print("   「投稿する」ボタンをクリックしました。公開完了を待機します...")
+                time.sleep(2)
+                
+                # 公開完了ダイアログの表示待機（「記事が公開されました」）
+                published_success = False
                 try:
-                    page.wait_for_url(lambda u: "/n/n" in u or "/notes/" not in u, timeout=15000)
-                except Exception:
-                    time.sleep(3)
-                published_url = page.url
+                    page.locator('text=記事が公開されました, :has-text("記事が公開されました")').first.wait_for(state="visible", timeout=15000)
+                    published_success = True
+                    print("   [OK] 「記事が公開されました」モーダルを確認しました")
+                except Exception as e:
+                    print(f"   [注意] 公開完了モーダルの待機タイムアウト（疎通確認に進みます）: {e}")
+                    time.sleep(2)
+                
+                # 記事IDの抽出と公開用URLの構築
+                current_url = page.url
+                match = re.search(r"/notes/([a-zA-Z0-9]+)", current_url)
+                if match:
+                    note_id = match.group(1)
+                    published_url = f"https://note.com/cool_hyena6987/n/{note_id}"
+                else:
+                    published_url = current_url
+                    
                 print(f"[OK] 公開処理が完了しました: {published_url}")
+                
+                # 公開URLの疎通確認
+                try:
+                    import requests
+                    r = requests.get(published_url, timeout=10, headers={"User-Agent": "Mozilla/5.0"})
+                    if r.status_code == 200:
+                        print(f"   [OK] 公開記事URLの疎通を確認しました（HTTP {r.status_code}）")
+                    else:
+                        print(f"   [注意] 公開記事URLのステータスコード: {r.status_code}")
+                except Exception as e:
+                    print(f"   [注意] 公開記事URL疎通確認: {e}")
                 
                 browser.close()
                 return {

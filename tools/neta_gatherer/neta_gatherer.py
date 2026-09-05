@@ -1,5 +1,6 @@
 import os
 import sys
+import subprocess
 import json
 import datetime
 import feedparser
@@ -56,6 +57,13 @@ TARGET_DIR = os.path.join(PROJECT_ROOT, "content", "reports")
 os.makedirs(TARGET_DIR, exist_ok=True)
 HISTORY_FILENAME = "processed_history.json"
 
+# Gemini API で利用するモデル候補（先頭から順に試し、過負荷(503/429)や非対応時は自動フォールバック）
+GEMINI_MODELS = [
+    "gemini-3.8-flash",  # 最新上位モデル（無料枠あり）
+    "gemini-2.5-flash",  # 安定高速モデル（フォールバック用）
+    "gemini-1.5-flash",  # 定番モデル（最終フォールバック用）
+]
+
 # PR TIMES フィルタリング用キーワード（タイトルまたはsummaryに含まれる記事を対象にする）
 PRTIMES_KEYWORDS = [
     "リテール", "小売", "店舗", "流通", "EC", "コンビニ", "スーパー",
@@ -79,6 +87,16 @@ PRTIMES_KEYWORDS = [
     "買い物", "販促", "棚", "売場", "売り場", "接客", "無人",
     "セルフレジ", "デジタルサイネージ", "フードロス", "食品ロス",
     "ネットスーパー", "物流", "ラストワンマイル", "配送",
+]
+
+# イベント・セミナー・ウェビナー・PR案内等の除外キーワード（全フィード対象）
+EXCLUDE_KEYWORDS = [
+    "セミナー", "ウェビナー", "WEBINAR", "オンラインセミナー", "無料セミナー",
+    "開催", "参加者募集", "受講生", "受講者", "登壇", "カンファレンス", "フォーラム",
+    "説明会", "内覧会", "展示会", "出展", "マルシェ", "ワークショップ",
+    "体験イベント", "フェス", "フェスティバル", "相談会", "交流会", "シンポジウム",
+    "【PR】", "［PR］", "[PR]", "プレゼントキャンペーン", "トークショー",
+    "受講募集", "出展社募集", "記念イベント", "記念セミナー"
 ]
 
 
@@ -188,6 +206,21 @@ def _matches_keywords(entry, keywords):
     text = (entry.title + " " + entry.get("summary", "")).upper()
     return any(k.upper() in text for k in keywords)
 
+def _is_excluded(entry, exclude_keywords):
+    """記事がイベント、ウェビナー、PR案内などに該当するか判定する（全フィード対象）。"""
+    text = (entry.title + " " + entry.get("summary", "")).upper()
+    link = entry.get("link", "").lower()
+    
+    # URLにセミナーやイベントが含まれる場合
+    if "/seminar/" in link or "/event/" in link or "/webinar/" in link:
+        return True
+        
+    # 除外キーワードが含まれる場合
+    if any(k.upper() in text for k in exclude_keywords):
+        return True
+        
+    return False
+
 # 予備フィード（フォールバック用）
 ALL_FALLBACK_FEEDS = [
     "https://www.ryutsuu.biz/feed",
@@ -209,10 +242,12 @@ def _parse_feed_robust(url):
         pass
     return feedparser.parse(url)
 
-def fetch_latest_news(rss_feeds, target_days, history, now_jst, keywords=None, fallback_feeds=None):
+def fetch_latest_news(rss_feeds, target_days, history, now_jst, keywords=None, fallback_feeds=None, exclude_keywords=None):
     print(f"ニュースを収集しています (対象期間: 当日および前日を含む直近{target_days}日間)...")
     if keywords:
         print(f"キーワードフィルタ有効: {len(keywords)}個のキーワードでPR TIMES記事を絞り込み")
+    if exclude_keywords:
+        print(f"除外フィルタ有効: {len(exclude_keywords)}個の除外キーワードでイベント・ウェビナー・PR案内を除外")
     
     def _fetch(feeds, days, ignore_dates=False):
         articles = []
@@ -227,6 +262,10 @@ def fetch_latest_news(rss_feeds, target_days, history, now_jst, keywords=None, f
                 count = 0
                 for entry in feed.entries:
                     if entry.title in seen_titles:
+                        continue
+                    
+                    # 除外判定（イベント・ウェビナー・PR案内を全フィードから弾く）
+                    if exclude_keywords and _is_excluded(entry, exclude_keywords):
                         continue
                     
                     if apply_filter and not _matches_keywords(entry, keywords):
@@ -285,23 +324,48 @@ def fetch_latest_news(rss_feeds, target_days, history, now_jst, keywords=None, f
     print(f"新規記事を {len(articles)} 件取得しました。")
     return articles
 
-def generate_content_with_retry(client, model, contents, config=None, max_retries=5, delay=5):
-    """Gemini APIの呼び出しをリトライするヘルパー関数"""
-    for attempt in range(max_retries):
-        try:
-            if config:
-                return client.models.generate_content(model=model, contents=contents, config=config)
-            else:
-                return client.models.generate_content(model=model, contents=contents)
-        except Exception as e:
-            err_msg = str(e)
-            is_temporary = any(kw in err_msg.upper() for kw in ["503", "429", "UNAVAILABLE", "RESOURCE_EXHAUSTED", "HIGH DEMAND", "TEMPORARY", "LIMIT"])
-            if attempt < max_retries - 1 and is_temporary:
-                wait_time = delay * (2 ** attempt)
-                print(f"[警告] Gemini API が一時的に利用できません ({err_msg})。{wait_time} 秒後に再試行します... (試行 {attempt + 1}/{max_retries})")
-                time.sleep(wait_time)
-            else:
-                raise e
+def generate_content_with_retry(client, contents, config=None, models=None, max_retries_per_model=3, delay=3):
+    """Gemini APIの呼び出しを行う。過負荷(503/429)やエラー時はリトライおよび次候補モデルへの自動フォールバックを行う。"""
+    candidate_models = models or GEMINI_MODELS
+    last_exception = None
+
+    for m_idx, model in enumerate(candidate_models):
+        print(f"Gemini API 呼び出し中 (モデル: {model})...")
+        for attempt in range(max_retries_per_model):
+            try:
+                if config:
+                    return client.models.generate_content(model=model, contents=contents, config=config)
+                else:
+                    return client.models.generate_content(model=model, contents=contents)
+            except Exception as e:
+                last_exception = e
+                err_msg = str(e)
+                is_temporary = any(kw in err_msg.upper() for kw in ["503", "429", "UNAVAILABLE", "RESOURCE_EXHAUSTED", "HIGH DEMAND", "TEMPORARY", "LIMIT"])
+                is_not_found = any(kw in err_msg.upper() for kw in ["404", "NOT_FOUND", "NOT FOUND", "IS NOT FOUND", "UNKNOWN MODEL"])
+                
+                # モデルが存在しない、またはアクセスできない場合は即座に次の候補モデルへ
+                if is_not_found:
+                    print(f"[注意] モデル「{model}」は利用できません ({err_msg})。次の候補モデルへ切り替えます。")
+                    break
+                
+                # 一時的な高負荷エラーの場合は同一モデルで少し待ってリトライ
+                if attempt < max_retries_per_model - 1 and is_temporary:
+                    wait_time = delay * (2 ** attempt)
+                    print(f"[警告] {model} が一時的に高負荷です ({err_msg})。{wait_time} 秒後に再試行します... (試行 {attempt + 1}/{max_retries_per_model})")
+                    time.sleep(wait_time)
+                else:
+                    # リトライ上限または一時的でないエラーの場合
+                    if m_idx < len(candidate_models) - 1:
+                        next_model = candidate_models[m_idx + 1]
+                        print(f"[警告] {model} のリクエストに失敗しました ({err_msg})。サブモデル「{next_model}」へ自動切り替えします...")
+                        time.sleep(2)
+                        break
+                    else:
+                        print(f"[エラー] すべての候補モデルでリクエストが失敗しました。")
+                        raise last_exception
+
+    if last_exception:
+        raise last_exception
 
 def generate_contents(articles):
     if not articles: return None
@@ -311,7 +375,9 @@ def generate_contents(articles):
     prompt = f"""
 あなたはフィールドマーケティングの専門家です。以下の最新ニュースから3つのトピックスを選び、デイリーレポートを作成してください。
 
-【トピック選定ルール】
+【トピック選定ルール（厳守）】
+- 【厳禁】イベント案内、セミナー・ウェビナー案内、展示会出展、参加者募集、一時的なキャンペーン告知等のPR記事は絶対に選定しないでください。
+- 必ず「企業の実際の事業展開、新店舗オープン、業態転換、業務提携、現場DX、新MD・商品戦略、物流・配送網強化」など、企業自身の取り組み・流通施策そのものを報じるニュースを選定してください。
 - 収集したニュースの中にドラッグストア・調剤併設・薬局関連（ウエルシア、ツルハ、マツキヨ、スギ薬局、コスモス等の主要チェーンやDgS動向）のニュースが含まれている場合は、3つのトピックのうち少なくとも1つは優先的にドラッグストア関連のニュースを選出してください。
 
 【ニュースソース】
@@ -345,7 +411,6 @@ def generate_contents(articles):
 """
     response = generate_content_with_retry(
         client=client,
-        model="gemini-3.5-flash",
         contents=prompt,
         config=types.GenerateContentConfig(response_mime_type="application/json"),
     )
@@ -406,7 +471,6 @@ def generate_weekly_summary(now_jst):
 """
     response = generate_content_with_retry(
         client=client,
-        model="gemini-3.5-flash",
         contents=prompt,
         config=types.GenerateContentConfig(response_mime_type="application/json"),
     )
@@ -540,7 +604,6 @@ def generate_x_posts(today_report, date_str):
     try:
         response = generate_content_with_retry(
             client=client,
-            model="gemini-3.5-flash",
             contents=prompt
         )
         return response.text.strip()
@@ -561,20 +624,25 @@ def get_header_image(date_str, output_path):
 
 def send_email(subject, body, attachment_paths):
     print("メールを送信しています...")
-    msg = MIMEMultipart()
-    msg['From'], msg['To'], msg['Subject'] = EMAIL_SENDER, EMAIL_RECEIVER, subject
-    msg.attach(MIMEText(body, 'plain'))
-    for path in attachment_paths:
-        with open(path, "rb") as f:
-            part = MIMEApplication(f.read(), Name=os.path.basename(path))
-        part.add_header('Content-Disposition', 'attachment', filename=os.path.basename(path))
-        msg.attach(part)
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-        server.login(EMAIL_SENDER, EMAIL_PASSWORD)
-        server.send_message(msg)
+    try:
+        msg = MIMEMultipart()
+        msg['From'], msg['To'], msg['Subject'] = EMAIL_SENDER, EMAIL_RECEIVER, subject
+        msg.attach(MIMEText(body, 'plain'))
+        for path in attachment_paths:
+            if os.path.exists(path):
+                with open(path, "rb") as f:
+                    part = MIMEApplication(f.read(), Name=os.path.basename(path))
+                part.add_header('Content-Disposition', 'attachment', filename=os.path.basename(path))
+                msg.attach(part)
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(EMAIL_SENDER, EMAIL_PASSWORD)
+            server.send_message(msg)
+        print("[OK] メール送信が完了しました。")
+    except Exception as e:
+        print(f"[警告] メール送信に失敗しました: {e}")
+        raise e
 
 def sync_note_articles():
-    import subprocess
     print("note RSSから最新記事の自動同期を試みています...")
     rss_url = "https://note.com/cool_hyena6987/rss"
     mapping_path = os.path.join(PROJECT_ROOT, "content", "docs", "retail_url_mapping.md")
@@ -663,8 +731,6 @@ def sync_note_articles():
 
 def main():
     try:
-        import subprocess
-
         # note記事の自動同期処理を実行
         sync_note_articles()
         
@@ -693,19 +759,27 @@ def main():
                 feeds, target_days = ["https://www.ryutsuu.biz/feed", "https://lnews.jp/feed", "https://diamond-rm.net/feed/"], 1
             elif weekday == 4: # 金曜：LNEWS & ダイヤモンドRM & 流通ニュース
                 feeds, target_days = ["https://lnews.jp/feed", "https://diamond-rm.net/feed/", "https://www.ryutsuu.biz/feed"], 1
-            elif weekday in [1, 5]: # 火・土：PR TIMES（公式RSSからキーワードフィルタリング）+ フォールバック
+            elif weekday in [1, 5]: # 火・土：流通ニュース & ダイヤモンドRM & LNEWS & PR TIMES
                 feeds, target_days = [
-                    "https://prtimes.jp/index.rdf",
-                    "https://lnews.jp/feed",
                     "https://www.ryutsuu.biz/feed",
                     "https://diamond-rm.net/feed/",
+                    "https://lnews.jp/feed",
+                    "https://prtimes.jp/index.rdf",
                 ], 1
             else: # その他フォールバック
                 feeds, target_days = ["https://lnews.jp/feed", "https://www.ryutsuu.biz/feed", "https://diamond-rm.net/feed/"], 1
             
             # PR TIMESのみキーワードフィルタリングを適用（他のRSSは全記事対象）
             kw_filter = PRTIMES_KEYWORDS if weekday in [1, 5] else None
-            articles = fetch_latest_news(feeds, target_days, history, now_jst, keywords=kw_filter, fallback_feeds=ALL_FALLBACK_FEEDS)
+            articles = fetch_latest_news(
+                feeds,
+                target_days,
+                history,
+                now_jst,
+                keywords=kw_filter,
+                fallback_feeds=ALL_FALLBACK_FEEDS,
+                exclude_keywords=EXCLUDE_KEYWORDS
+            )
             if not articles:
                 print("新しい記事がないため終了します。")
                 return
@@ -732,7 +806,6 @@ def main():
         # noteへの自動投稿（Cookieが設定されている場合のみ実行）
         note_url = ""
         try:
-            import sys
             sys.path.insert(0, os.path.dirname(__file__))
             from note_publisher import publish_to_note
             
