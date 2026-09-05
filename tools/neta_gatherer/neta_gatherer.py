@@ -59,9 +59,10 @@ HISTORY_FILENAME = "processed_history.json"
 
 # Gemini API で利用するモデル候補（先頭から順に試し、過負荷(503/429)や非対応時は自動フォールバック）
 GEMINI_MODELS = [
-    "gemini-3.8-flash",  # 最新上位モデル（無料枠あり）
-    "gemini-2.5-flash",  # 安定高速モデル（フォールバック用）
-    "gemini-1.5-flash",  # 定番モデル（最終フォールバック用）
+    "gemini-3.8-flash",  # 最新メインモデル（無料枠）
+    "gemini-3.6-flash",  # Google推奨の安定高速モデル（フォールバック用）
+    "gemini-3.5-flash",  # 従来実績モデル（フォールバック用）
+    "gemini-2.0-flash",  # 定番モデル（最終フォールバック用）
 ]
 
 # PR TIMES フィルタリング用キーワード（タイトルまたはsummaryに含まれる記事を対象にする）
