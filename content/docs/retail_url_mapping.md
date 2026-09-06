@@ -112,3 +112,4 @@
 | `2026-09-02-note_imported_n2f6d920d6fc9.md` | 【スギ薬局／ファミリーマート／イトーヨーカ堂】異業種包括協業、価格戦略、デジタル送客が切り拓く店舗流通の未来 | https://note.com/cool_hyena6987/n/n2f6d920d6fc9 |
 | `2026-09-04-note_imported_n370f53c16159.md` | 【クスリのアオキHD／ファミリーマート／三菱食品】店舗改革とテクノロジーが切り拓く店頭販促とフィールドマーケティングの未来 | https://note.com/cool_hyena6987/n/n370f53c16159 |
 | `2026-09-05-note_imported_nd17ee22784dd.md` | 【中部薬品／PALTAC・あらた／コーナン商事】小売・流通の構造改革が進む最新動向とフィールドマーケティング戦略 | https://note.com/cool_hyena6987/n/nd17ee22784dd |
+| `2026-09-06-note_imported_nbba6a1d4ea37.md` | 【週間まとめ】暮らしを変えるリテール最新トレンド（09/06週） | https://note.com/cool_hyena6987/n/nbba6a1d4ea37 |
