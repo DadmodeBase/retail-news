@@ -117,3 +117,5 @@
 | `2026-09-08-note_imported_ne78e8de91284.md` | 【マツキヨココカラ／しまむら／モスフードサービス】流通再編とサプライチェーンDXが加速する店舗現場の構造改革 | https://note.com/cool_hyena6987/n/ne78e8de91284 |
 | `2026-09-09-note_imported_nfc25a0b502d5.md` | 【ライフ／コスモス薬品／セブン-イレブン】流通再編と業態境界の融解が進む最新小売戦略と現場への影響 | https://note.com/cool_hyena6987/n/nfc25a0b502d5 |
 | `2026-09-10-note_imported_n33bc143c91c7.md` | 【コスモス薬品／セブン-イレブン／佐川急便】店舗拡大・異業種MD・現場DXに見る次世代流通戦略 | https://note.com/cool_hyena6987/n/n33bc143c91c7 |
+| `2026-09-11-note_imported_nfdf2ece7ac71.md` | 【セブン‐イレブン／クスリのアオキHD／Amazon】流通最前線のMD革新と店舗網・物流基盤の拡充戦略 | https://note.com/cool_hyena6987/n/nfdf2ece7ac71 |
+| `2026-09-11-note_imported_ned8512e43dff.md` | 部下の報告書から、官公庁データのAI自動収集が生まれた話 | https://note.com/cool_hyena6987/n/ned8512e43dff |
