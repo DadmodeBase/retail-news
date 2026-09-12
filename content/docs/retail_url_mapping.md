@@ -119,3 +119,4 @@
 | `2026-09-10-note_imported_n33bc143c91c7.md` | 【コスモス薬品／セブン-イレブン／佐川急便】店舗拡大・異業種MD・現場DXに見る次世代流通戦略 | https://note.com/cool_hyena6987/n/n33bc143c91c7 |
 | `2026-09-11-note_imported_nfdf2ece7ac71.md` | 【セブン‐イレブン／クスリのアオキHD／Amazon】流通最前線のMD革新と店舗網・物流基盤の拡充戦略 | https://note.com/cool_hyena6987/n/nfdf2ece7ac71 |
 | `2026-09-11-note_imported_ned8512e43dff.md` | 部下の報告書から、官公庁データのAI自動収集が生まれた話 | https://note.com/cool_hyena6987/n/ned8512e43dff |
+| `2026-09-12-note_imported_na444c7d2db9a.md` | 【コンビニ各社／アインHD／アサヒロジ】小売MDの進化と次世代薬局・都心物流網の強化 | https://note.com/cool_hyena6987/n/na444c7d2db9a |
