@@ -123,3 +123,4 @@
 | `2026-09-13-note_imported_n46124a0edce5.md` | 【週間まとめ】暮らしを変えるリテール最新トレンド（09/13週） | https://note.com/cool_hyena6987/n/n46124a0edce5 |
 | `2026-09-14-note_imported_n4bd7272f0a1d.md` | 【セブン-イレブン／コスモス薬品／ジョイフル本田】業態の枠を超える専門特化と広域ドミナント拡大戦略 | https://note.com/cool_hyena6987/n/n4bd7272f0a1d |
 | `2026-09-15-note_imported_naa603038d82b.md` | 【タイミー／カインズ／セブン‐イレブン】人時再設計と現場DX、Qコマースが拓く店舗運用の新次元 | https://note.com/cool_hyena6987/n/naa603038d82b |
+| `2026-09-16-note_imported_ne0683eee67d1.md` | 【ドラッグストアモリ／イオン／全日空商事】ドミナント出店・物流網再編・事業買収がもたらすリテール現場の最新動向 | https://note.com/cool_hyena6987/n/ne0683eee67d1 |
