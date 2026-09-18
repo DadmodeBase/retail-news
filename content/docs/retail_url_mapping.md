@@ -125,3 +125,4 @@
 | `2026-09-15-note_imported_naa603038d82b.md` | 【タイミー／カインズ／セブン‐イレブン】人時再設計と現場DX、Qコマースが拓く店舗運用の新次元 | https://note.com/cool_hyena6987/n/naa603038d82b |
 | `2026-09-16-note_imported_ne0683eee67d1.md` | 【ドラッグストアモリ／イオン／全日空商事】ドミナント出店・物流網再編・事業買収がもたらすリテール現場の最新動向 | https://note.com/cool_hyena6987/n/ne0683eee67d1 |
 | `2026-09-17-note_imported_n6842e35d4dec.md` | 【ドラッグストアモリ／USEN・DearOne／ユニクロ】店舗網拡大とリテールメディア・D2C物流がもたらすフィールドマーケティングの新展開 | https://note.com/cool_hyena6987/n/n6842e35d4dec |
+| `2026-09-18-note_imported_na8fd63767e44.md` | 【クリエイトSD／イオンネクスト／ダイエー】ドラッグストア出店強化と物流DX・店舗構造改革に見る現場最適化の最前線 | https://note.com/cool_hyena6987/n/na8fd63767e44 |
