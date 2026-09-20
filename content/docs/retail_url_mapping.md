@@ -127,3 +127,4 @@
 | `2026-09-17-note_imported_n6842e35d4dec.md` | 【ドラッグストアモリ／USEN・DearOne／ユニクロ】店舗網拡大とリテールメディア・D2C物流がもたらすフィールドマーケティングの新展開 | https://note.com/cool_hyena6987/n/n6842e35d4dec |
 | `2026-09-18-note_imported_na8fd63767e44.md` | 【クリエイトSD／イオンネクスト／ダイエー】ドラッグストア出店強化と物流DX・店舗構造改革に見る現場最適化の最前線 | https://note.com/cool_hyena6987/n/na8fd63767e44 |
 | `2026-09-19-note_imported_n9d8b29b0f667.md` | 【ローソン／カインズ／ライフ】遊休資産の価値化と都心・小型特化に見るリアル店舗の機能拡張と新MD戦略 | https://note.com/cool_hyena6987/n/n9d8b29b0f667 |
+| `2026-09-20-note_imported_na4c138c66a06.md` | 【週間まとめ】暮らしを変えるリテール最新トレンド（09/20週） | https://note.com/cool_hyena6987/n/na4c138c66a06 |
