@@ -132,3 +132,4 @@
 | `2026-09-22-note_imported_ned7613052178.md` | 【東武百貨店／ツナグG／DR.CHILL】店頭DXの多言語化から現場人材の採用最適化・新MD展開まで読み解く流通動向 | https://note.com/cool_hyena6987/n/ned7613052178 |
 | `2026-09-23-note_imported_n9b1ae7a7f06d.md` | 【モルトンブラウン／ダイヤ／エブリデイ】チャネル特化型MDと独自商品開発で実現する店舗競争力の強化 | https://note.com/cool_hyena6987/n/n9b1ae7a7f06d |
 | `2026-09-24-note_imported_n3a7d7996054c.md` | 【クリエイトSD／CGC×湖池屋／ローソン】店舗網拡張・共同商品開発・生成AI導入が示す現場マーケティングの進化 | https://note.com/cool_hyena6987/n/n3a7d7996054c |
+| `2026-09-25-note_imported_n69754ab40131.md` | 【薬王堂／ハンズ／ローソン】店舗機能の拡張と顧客体験DXが拓く流通・売場戦略の新潮流 | https://note.com/cool_hyena6987/n/n69754ab40131 |
