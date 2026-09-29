@@ -136,3 +136,4 @@
 | `2026-09-26-note_imported_nbb313074ba90.md` | 【ツルハ・コスモス薬品／ライフ／ベイシア】DgS既存店伸長とPB・現場DXが拓く店頭革新 | https://note.com/cool_hyena6987/n/nbb313074ba90 |
 | `2026-09-27-note_imported_n10f2639d8a40.md` | 【週間まとめ】暮らしを変えるリテール最新トレンド（09/27週） | https://note.com/cool_hyena6987/n/n10f2639d8a40 |
 | `2026-09-28-note_imported_n068395b754c7.md` | 【セブン-イレブン／ヨークHD／ジュンテンドー】低価格PB拡充・商業施設刷新・一次産業連携に見る流通現場の構造改革 | https://note.com/cool_hyena6987/n/n068395b754c7 |
+| `2026-09-29-note_imported_n1367c37436ce.md` | 【クスリのアオキHD／ファミリーマート／ダイセーエブリー二十四】現場起点のリテール革新と物流再編動向 | https://note.com/cool_hyena6987/n/n1367c37436ce |
