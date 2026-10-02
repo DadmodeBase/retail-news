@@ -139,3 +139,4 @@
 | `2026-09-29-note_imported_n1367c37436ce.md` | 【クスリのアオキHD／ファミリーマート／ダイセーエブリー二十四】現場起点のリテール革新と物流再編動向 | https://note.com/cool_hyena6987/n/n1367c37436ce |
 | `2026-09-30-note_imported_nda0c15f1e023.md` | 【レデイ薬局／コメリ／コクヨ】地域密着の多機能店舗展開とロジスティクス革新がもたらす流通新潮流 | https://note.com/cool_hyena6987/n/nda0c15f1e023 |
 | `2026-10-01-note_imported_nc0984ff59ee1.md` | 【中部薬品／ファミリーマート／ヤマト運輸】地域医療ハブ化・リテールメディア深化・物流インフラ共創が拓く現場起点マーケティング | https://note.com/cool_hyena6987/n/nc0984ff59ee1 |
+| `2026-10-02-note_imported_n1c310ba3c0c2.md` | 【コスモス薬品／PPIH／イオンリテール】北関東ドミナント強化・玩具買収による体験型売場・新世代都市型SCに見る流通戦略の最前線 | https://note.com/cool_hyena6987/n/n1c310ba3c0c2 |
