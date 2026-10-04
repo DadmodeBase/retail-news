@@ -141,3 +141,4 @@
 | `2026-10-01-note_imported_nc0984ff59ee1.md` | 【中部薬品／ファミリーマート／ヤマト運輸】地域医療ハブ化・リテールメディア深化・物流インフラ共創が拓く現場起点マーケティング | https://note.com/cool_hyena6987/n/nc0984ff59ee1 |
 | `2026-10-02-note_imported_n1c310ba3c0c2.md` | 【コスモス薬品／PPIH／イオンリテール】北関東ドミナント強化・玩具買収による体験型売場・新世代都市型SCに見る流通戦略の最前線 | https://note.com/cool_hyena6987/n/n1c310ba3c0c2 |
 | `2026-10-03-note_imported_nb371846da1fb.md` | 【イオンリテール／スガキコ／佐川急便】拠点再編・グループシナジー・物流コスト構造変革が迫る店頭最適化の新潮流 | https://note.com/cool_hyena6987/n/nb371846da1fb |
+| `2026-10-04-note_imported_n746f085d50ed.md` | 【週間まとめ】暮らしを変えるリテール最新トレンド（10/04週） | https://note.com/cool_hyena6987/n/n746f085d50ed |
