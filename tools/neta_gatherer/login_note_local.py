@@ -3,7 +3,7 @@ login_note_local.py
 ローカルでnoteにログインし、セッションCookieを保存・エクスポートするスクリプト。
 
 使用方法:
-  python skills/neta_gatherer/login_note_local.py
+  python tools/neta_gatherer/login_note_local.py
 
 ブラウザ（Chromium）が立ち上がるので、noteにログインしてください。
 ログインが完了すると、自動的にCookieが config/note_cookies.json に保存され、
