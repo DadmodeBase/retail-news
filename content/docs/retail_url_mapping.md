@@ -142,3 +142,4 @@
 | `2026-10-02-note_imported_n1c310ba3c0c2.md` | 【コスモス薬品／PPIH／イオンリテール】北関東ドミナント強化・玩具買収による体験型売場・新世代都市型SCに見る流通戦略の最前線 | https://note.com/cool_hyena6987/n/n1c310ba3c0c2 |
 | `2026-10-03-note_imported_nb371846da1fb.md` | 【イオンリテール／スガキコ／佐川急便】拠点再編・グループシナジー・物流コスト構造変革が迫る店頭最適化の新潮流 | https://note.com/cool_hyena6987/n/nb371846da1fb |
 | `2026-10-04-note_imported_n746f085d50ed.md` | 【週間まとめ】暮らしを変えるリテール最新トレンド（10/04週） | https://note.com/cool_hyena6987/n/n746f085d50ed |
+| `2026-10-05-note_imported_n42e5196f0fcd.md` | 【クリエイトSD／大手コンビニ／インテージ・NTTデータ】コスト高騰下の店舗効率化とMD変革が進むリテール最前線 | https://note.com/cool_hyena6987/n/n42e5196f0fcd |
