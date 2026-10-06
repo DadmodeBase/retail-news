@@ -401,7 +401,15 @@ def _with_browser(fn, headless=True):
     if not cookies:
         raise PermissionError("noteのセッションCookieが見つかりません（NOTE_SESSION_COOKIES を設定してください）")
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=headless, args=["--no-sandbox", "--disable-setuid-sandbox"])
+        browser = p.chromium.launch(
+            headless=headless,
+            args=[
+                "--no-sandbox",
+                "--disable-setuid-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-gpu",
+            ],
+        )
         context = browser.new_context(user_agent=_UA, viewport={"width": 1280, "height": 900}, locale="ja-JP")
         context.add_cookies(cookies)
         page = context.new_page()
@@ -411,12 +419,43 @@ def _with_browser(fn, headless=True):
             _save_debug(page, "error")
             raise
         finally:
-            browser.close()
+            try:
+                page.close()
+            except Exception:
+                pass
+            try:
+                context.close()
+            except Exception:
+                pass
+            try:
+                browser.close()
+            except Exception:
+                pass
 
 
 # ---------------------------------------------------------------------------
 # 公開後の検証（noteの公開APIを使用）
 # ---------------------------------------------------------------------------
+def check_today_published_on_note(date_str):
+    """noteの公開APIを確認し、指定日付（YYYY-MM-DD）に既に公開された記事があれば返す"""
+    try:
+        url = f"https://note.com/api/v2/creators/{config.NOTE_USER}/contents?kind=note&page=1"
+        r = requests.get(url, headers={"User-Agent": _UA}, timeout=15)
+        if r.status_code != 200:
+            return None
+        data = r.json().get("data", {})
+        for c in data.get("contents", []):
+            pub_at = c.get("publishAt", "")
+            if pub_at and pub_at.startswith(date_str) and c.get("status") == "published":
+                key = c.get("key", "")
+                note_url = f"https://note.com/{config.NOTE_USER}/n/{key}"
+                title = c.get("name", "")
+                return {"url": note_url, "key": key, "title": title}
+    except Exception as e:
+        print(f"[警告] noteの公開状況確認に失敗しました: {e}")
+    return None
+
+
 def fetch_public_tags(note_key):
     for page_no in (1, 2):
         url = f"https://note.com/api/v2/creators/{config.NOTE_USER}/contents?kind=note&page={page_no}"

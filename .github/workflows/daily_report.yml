@@ -11,6 +11,7 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    timeout-minutes: 20
     permissions:
       contents: write
     steps:
@@ -29,6 +30,7 @@ jobs:
           python -m playwright install chromium
 
       - name: Run script
+        timeout-minutes: 15
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           EMAIL_SENDER: ${{ secrets.EMAIL_SENDER }}

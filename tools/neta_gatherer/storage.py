@@ -12,6 +12,7 @@ import re
 import shutil
 import smtplib
 import subprocess
+from email.header import Header
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -191,10 +192,12 @@ def prepare_header_image(date_str, output_path):
     return None
 
 
-def send_email(subject, body, attachment_paths):
+def send_email(subject, body, attachment_paths, timeout=30):
     print("メールを送信しています...")
     msg = MIMEMultipart()
-    msg["From"], msg["To"], msg["Subject"] = config.EMAIL_SENDER, config.EMAIL_RECEIVER, subject
+    msg["From"] = config.EMAIL_SENDER
+    msg["To"] = config.EMAIL_RECEIVER
+    msg["Subject"] = Header(subject, "utf-8")
     msg.attach(MIMEText(body, "plain", "utf-8"))
     for path in attachment_paths:
         if path and os.path.exists(path):
@@ -202,7 +205,11 @@ def send_email(subject, body, attachment_paths):
                 part = MIMEApplication(f.read(), Name=os.path.basename(path))
             part.add_header("Content-Disposition", "attachment", filename=os.path.basename(path))
             msg.attach(part)
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-        server.login(config.EMAIL_SENDER, config.EMAIL_PASSWORD)
-        server.send_message(msg)
-    print("[OK] メール送信が完了しました。")
+    try:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=timeout) as server:
+            server.login(config.EMAIL_SENDER, config.EMAIL_PASSWORD)
+            server.send_message(msg)
+        print("[OK] メール送信が完了しました。")
+    except Exception as e:
+        print(f"[エラー] メール送信に失敗しました: {e}")
+        raise

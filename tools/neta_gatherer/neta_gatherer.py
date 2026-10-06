@@ -60,6 +60,12 @@ def main():
                 print(f"[スキップ] 本日分（{date_str}）のレポートは既に生成・保存済みです。")
                 return
 
+            # note 側の公開状況もチェック（Git未反映時の多重投稿防止）
+            published_note = note_publisher.check_today_published_on_note(date_str)
+            if published_note:
+                print(f"[スキップ] noteに本日分（{date_str}）の記事が既に公開されています: {published_note.get('url')}")
+                return
+
         # 3. Google Driveから過去記事タイトルの履歴を取得（重複ピックアップ防止）
         service = storage.get_drive_service() if config.DRIVE_FOLDER_ID else None
         history, file_id = storage.load_history(service) if service else ([], None)
@@ -132,29 +138,38 @@ def main():
             else:
                 print(f"[注意] note自動投稿がスキップまたは失敗しました: {pub_result.get('message')}")
         except Exception as e:
-            print(f"[注意] note自動投稿処理で例外が発生しました（メール送信は継続します）: {e}")
+            print(f"[注意] note自動投稿処理で例外が発生しました（後続処理は継続します）: {e}")
             traceback.print_exc()
 
+        # note投稿直後にもレポートをGitへコミット＆プッシュ（後続処理で万一ハングしても多重投稿を確実に防ぐ）
+        storage.git_commit_and_push(
+            paths=[f"content/reports/{date_str}-daily-report.md"],
+            message=f"auto: save daily report {date_str}",
+        )
+
         # 7. X（Twitter）投稿案の生成
-        x_posts_text = content_generator.generate_x_posts(daily_report, today_url=note_url)
+        x_posts_text = ""
+        try:
+            x_posts_text = content_generator.generate_x_posts(daily_report, today_url=note_url)
+        except Exception as e:
+            print(f"[注意] X投稿案の生成で例外が発生しました（メール送信は継続します）: {e}")
 
         # 8. メール送信
         email_body = "本日のレポートを添付します。\n\n"
         if note_url:
             email_body += f"【公開済み note URL】\n{note_url}\n\n"
-        email_body += x_posts_text
+        if x_posts_text:
+            email_body += x_posts_text
 
-        storage.send_email(
-            subject=f"【日刊】{article_title} - {date_str}",
-            body=email_body,
-            attachment_paths=attachments,
-        )
-
-        # 9. GitHub Actions 上でレポートをリポジトリへ自動コミット＆プッシュ
-        storage.git_commit_and_push(
-            paths=[f"content/reports/{date_str}-daily-report.md"],
-            message=f"auto: save daily report {date_str}",
-        )
+        try:
+            storage.send_email(
+                subject=f"【日刊】{article_title} - {date_str}",
+                body=email_body,
+                attachment_paths=attachments,
+            )
+        except Exception as e:
+            print(f"[エラー] メール送信に失敗しました: {e}")
+            traceback.print_exc()
 
         print("[OK] すべての工程が正常に完了しました。")
 
