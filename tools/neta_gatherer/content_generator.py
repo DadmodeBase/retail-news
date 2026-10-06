@@ -169,8 +169,14 @@ def generate_weekly_summary(now_jst):
 # ---------------------------------------------------------------------------
 # noteハッシュタグ
 # ---------------------------------------------------------------------------
-def build_note_tags(article_title):
-    """タイトルの【】内の企業名 + 必須タグ + 基本タグ（重複排除・上限あり）"""
+def build_note_tags(article_title, body_text=""):
+    """
+    note用ハッシュタグ（最大 NOTE_TAG_LIMIT 個 = 7個）を生成する。
+    1. 「フィールドマーケティング」（必須）
+    2. タイトルの【】内の企業名（必須）
+    3. その他: 記事本文・タイトルに関連するキーワード
+    """
+    # 1. タイトルから企業名を抽出（必須）
     company_tags = []
     m = re.search(r"【(.*?)】", article_title)
     if m and not any(k in m.group(1) for k in ["日刊", "週間まとめ", "テスト"]):
@@ -178,9 +184,46 @@ def build_note_tags(article_title):
             c = re.sub(r"[#＃!！?？,，.。:：;；]", "", c.strip())
             if c and len(c) <= 20:
                 company_tags.append(c)
-    company_tags = company_tags[:config.NOTE_MAX_COMPANY_TAGS]
-    tags = list(dict.fromkeys(company_tags + config.NOTE_MUST_TAGS + config.NOTE_BASE_TAGS))
-    return tags[:config.NOTE_TAG_LIMIT]
+
+    # 重複排除
+    company_tags = list(dict.fromkeys(company_tags))
+
+    # 必須タグ: フィールドマーケティング
+    must_tags = [t for t in config.NOTE_MUST_TAGS if t]
+
+    # 基本タグ（企業名 + フィールドマーケティング）
+    # ※並び順: 企業名 -> フィールドマーケティング
+    base_tags = list(dict.fromkeys(company_tags + must_tags))
+
+    # 万が一、企業名+必須タグだけで上限（7個）を超える場合は上限でクリップ
+    if len(base_tags) >= config.NOTE_TAG_LIMIT:
+        return base_tags[:config.NOTE_TAG_LIMIT]
+
+    # 残り枠数
+    remaining_slots = config.NOTE_TAG_LIMIT - len(base_tags)
+
+    # 3. 記事本文・タイトルから関連キーワードを抽出
+    search_text = f"{article_title}\n{body_text or ''}"
+    relevant_tags = []
+    for kw in getattr(config, "NOTE_RELEVANT_KEYWORDS", []):
+        if kw in base_tags or kw in relevant_tags:
+            continue
+        if kw in search_text:
+            relevant_tags.append(kw)
+            if len(relevant_tags) >= remaining_slots:
+                break
+
+    # それでも枠が余る場合はフォールバックリストから補完
+    if len(relevant_tags) < remaining_slots:
+        fallback_list = getattr(config, "NOTE_FALLBACK_TAGS", getattr(config, "NOTE_BASE_TAGS", []))
+        for fb in fallback_list:
+            if fb in base_tags or fb in relevant_tags:
+                continue
+            relevant_tags.append(fb)
+            if len(relevant_tags) >= remaining_slots:
+                break
+
+    return (base_tags + relevant_tags)[:config.NOTE_TAG_LIMIT]
 
 
 # ---------------------------------------------------------------------------
