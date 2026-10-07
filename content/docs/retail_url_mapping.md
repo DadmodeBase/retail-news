@@ -145,3 +145,4 @@
 | `2026-10-05-note_imported_n42e5196f0fcd.md` | 【クリエイトSD／大手コンビニ／インテージ・NTTデータ】コスト高騰下の店舗効率化とMD変革が進むリテール最前線 | https://note.com/cool_hyena6987/n/n42e5196f0fcd |
 | `2026-10-06-note_imported_n5906c1151ad3.md` | 【クスリのアオキ／ファミリーマート／カインズ】流通大手の戦略的転換：調剤・食品強化、物流2024年問題対策、プロ市場M&Aがもたらすフィールドマーケティングの変革 | https://note.com/cool_hyena6987/n/n5906c1151ad3 |
 | `2026-10-06-note_imported_na2b86d50318c.md` | 【JR東日本／楽天／主要港湾】独自決済「teppay」始動とオンライン決済網の拡充、および外貿コンテナ貨物量から見る最新流通動向 | https://note.com/cool_hyena6987/n/na2b86d50318c |
+| `2026-10-07-note_imported_n376b493ca008.md` | 【ファミリーマート／コモディイイダ／コープデリ】物流改革・地域再編・AIデータ活用に見る現場マーケティング戦略 | https://note.com/cool_hyena6987/n/n376b493ca008 |
