@@ -172,11 +172,14 @@ def generate_weekly_summary(now_jst):
 def build_note_tags(article_title, body_text=""):
     """
     note用ハッシュタグ（最大 NOTE_TAG_LIMIT 個 = 7個）を生成する。
-    1. 「フィールドマーケティング」（必須）
-    2. タイトルの【】内の企業名（必須）
+    1. 「フィールドマーケティング」（最優先・必須）
+    2. タイトルの【】内の企業名
     3. その他: 記事本文・タイトルに関連するキーワード
     """
-    # 1. タイトルから企業名を抽出（必須）
+    # 1. 必須タグ: フィールドマーケティング（最優先）
+    must_tags = [t for t in config.NOTE_MUST_TAGS if t]
+
+    # 2. タイトルから企業名を抽出
     company_tags = []
     m = re.search(r"【(.*?)】", article_title)
     if m and not any(k in m.group(1) for k in ["日刊", "週間まとめ", "テスト"]):
@@ -188,14 +191,11 @@ def build_note_tags(article_title, body_text=""):
     # 重複排除
     company_tags = list(dict.fromkeys(company_tags))
 
-    # 必須タグ: フィールドマーケティング
-    must_tags = [t for t in config.NOTE_MUST_TAGS if t]
+    # 基本タグ（フィールドマーケティング最優先 + 企業名）
+    # ※並び順: フィールドマーケティング -> 企業名
+    base_tags = list(dict.fromkeys(must_tags + company_tags))
 
-    # 基本タグ（企業名 + フィールドマーケティング）
-    # ※並び順: 企業名 -> フィールドマーケティング
-    base_tags = list(dict.fromkeys(company_tags + must_tags))
-
-    # 万が一、企業名+必須タグだけで上限（7個）を超える場合は上限でクリップ
+    # 万が一、必須タグ+企業名だけで上限（7個）を超える場合は上限でクリップ
     if len(base_tags) >= config.NOTE_TAG_LIMIT:
         return base_tags[:config.NOTE_TAG_LIMIT]
 

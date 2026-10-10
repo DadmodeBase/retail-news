@@ -2,10 +2,10 @@ name: Daily Retail News Report
 
 on:
   schedule:
-    # メイン: 毎日JST午前11時17分（UTC 2:17）に実行
-    - cron: '17 2 * * *'
-    # バックアップ: メインが遅延した場合の保険（JST 15:17 = UTC 6:17）
-    - cron: '17 6 * * *'
+    # メイン: 毎日JST午前8時47分（UTC 23:47）に実行（お昼11:30〜12:30頃の着地狙い）
+    - cron: '47 23 * * *'
+    # バックアップ: メインが遅延・不発の場合の保険（JST 11:37 = UTC 2:37）
+    - cron: '37 2 * * *'
   workflow_dispatch: # 手動実行用ボタン
 
 jobs:
