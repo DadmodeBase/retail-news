@@ -148,3 +148,4 @@
 | `2026-10-07-note_imported_n376b493ca008.md` | 【ファミリーマート／コモディイイダ／コープデリ】物流改革・地域再編・AIデータ活用に見る現場マーケティング戦略 | https://note.com/cool_hyena6987/n/n376b493ca008 |
 | `2026-10-08-note_imported_n368b936627a1.md` | 【ツルハHD／フジ／国分北海道】食品強化の業態転換とSKU最適化・持続可能物流への構造改革 | https://note.com/cool_hyena6987/n/n368b936627a1 |
 | `2026-10-09-note_imported_n0a35024b9895.md` | 【セブン-イレブン／DHL／ソフトバンク】市場の変化に応える新価格戦略と現場DXの最前線 | https://note.com/cool_hyena6987/n/n0a35024b9895 |
+| `2026-10-10-note_imported_nba5ebde63909.md` | 【ファミリーマート／セブン-イレブン／エコス】店頭メディア進化と大手CVS・SMの構造改革が迫る現場変革 | https://note.com/cool_hyena6987/n/nba5ebde63909 |
