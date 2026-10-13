@@ -151,3 +151,4 @@
 | `2026-10-10-note_imported_nba5ebde63909.md` | 【ファミリーマート／セブン-イレブン／エコス】店頭メディア進化と大手CVS・SMの構造改革が迫る現場変革 | https://note.com/cool_hyena6987/n/nba5ebde63909 |
 | `2026-10-11-note_imported_ne59a1b056f83.md` | 【週間まとめ】暮らしを変えるリテール最新トレンド（10/11週） | https://note.com/cool_hyena6987/n/ne59a1b056f83 |
 | `2026-10-12-note_imported_n3ff5dbfc32c2.md` | 【ライフ】23期連続増収の基盤を紐解く成長戦略――中京進出構想・高付加価値MD・SCM改革の最前線 | https://note.com/cool_hyena6987/n/n3ff5dbfc32c2 |
+| `2026-10-13-note_imported_n6ec757b62e54.md` | 【イオン／くら寿司／ヤマトHD】SCM内製化と高付加価値化、店頭DXが拓く次世代リテール戦略 | https://note.com/cool_hyena6987/n/n6ec757b62e54 |
