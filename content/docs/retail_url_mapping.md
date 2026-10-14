@@ -152,3 +152,4 @@
 | `2026-10-11-note_imported_ne59a1b056f83.md` | 【週間まとめ】暮らしを変えるリテール最新トレンド（10/11週） | https://note.com/cool_hyena6987/n/ne59a1b056f83 |
 | `2026-10-12-note_imported_n3ff5dbfc32c2.md` | 【ライフ】23期連続増収の基盤を紐解く成長戦略――中京進出構想・高付加価値MD・SCM改革の最前線 | https://note.com/cool_hyena6987/n/n3ff5dbfc32c2 |
 | `2026-10-13-note_imported_n6ec757b62e54.md` | 【イオン／くら寿司／ヤマトHD】SCM内製化と高付加価値化、店頭DXが拓く次世代リテール戦略 | https://note.com/cool_hyena6987/n/n6ec757b62e54 |
+| `2026-10-14-note_imported_nfef02c4a06c0.md` | 【ツルハHD／東急ストア／イズミ】PB強化と高付加価値MDが拓く店舗起点のリテール戦略 | https://note.com/cool_hyena6987/n/nfef02c4a06c0 |
