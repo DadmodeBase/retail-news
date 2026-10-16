@@ -154,3 +154,4 @@
 | `2026-10-13-note_imported_n6ec757b62e54.md` | 【イオン／くら寿司／ヤマトHD】SCM内製化と高付加価値化、店頭DXが拓く次世代リテール戦略 | https://note.com/cool_hyena6987/n/n6ec757b62e54 |
 | `2026-10-14-note_imported_nfef02c4a06c0.md` | 【ツルハHD／東急ストア／イズミ】PB強化と高付加価値MDが拓く店舗起点のリテール戦略 | https://note.com/cool_hyena6987/n/nfef02c4a06c0 |
 | `2026-10-15-note_imported_neca62be317f0.md` | 【イオン／カインズ／ファミリーマート】店舗業態転換と現場DX提携、価格競争下の売場戦略が示す流通再編の針路 | https://note.com/cool_hyena6987/n/neca62be317f0 |
+| `2026-10-16-note_imported_ne5535e0d8998.md` | 【ウエルシアHD／ローソン／イズミ】店舗機能の拡張とDX・再編が描く次世代リテール戦略 | https://note.com/cool_hyena6987/n/ne5535e0d8998 |
