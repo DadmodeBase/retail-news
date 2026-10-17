@@ -155,3 +155,4 @@
 | `2026-10-14-note_imported_nfef02c4a06c0.md` | 【ツルハHD／東急ストア／イズミ】PB強化と高付加価値MDが拓く店舗起点のリテール戦略 | https://note.com/cool_hyena6987/n/nfef02c4a06c0 |
 | `2026-10-15-note_imported_neca62be317f0.md` | 【イオン／カインズ／ファミリーマート】店舗業態転換と現場DX提携、価格競争下の売場戦略が示す流通再編の針路 | https://note.com/cool_hyena6987/n/neca62be317f0 |
 | `2026-10-16-note_imported_ne5535e0d8998.md` | 【ウエルシアHD／ローソン／イズミ】店舗機能の拡張とDX・再編が描く次世代リテール戦略 | https://note.com/cool_hyena6987/n/ne5535e0d8998 |
+| `2026-10-17-note_imported_n49ebabebae9f.md` | 【ローソン／イオン／大丸松坂屋】店舗オペレーション刷新とPB強化、AI接客分析が拓く現場起点のリテール戦略 | https://note.com/cool_hyena6987/n/n49ebabebae9f |
