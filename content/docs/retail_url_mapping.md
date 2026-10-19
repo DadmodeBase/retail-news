@@ -157,3 +157,4 @@
 | `2026-10-16-note_imported_ne5535e0d8998.md` | 【ウエルシアHD／ローソン／イズミ】店舗機能の拡張とDX・再編が描く次世代リテール戦略 | https://note.com/cool_hyena6987/n/ne5535e0d8998 |
 | `2026-10-17-note_imported_n49ebabebae9f.md` | 【ローソン／イオン／大丸松坂屋】店舗オペレーション刷新とPB強化、AI接客分析が拓く現場起点のリテール戦略 | https://note.com/cool_hyena6987/n/n49ebabebae9f |
 | `2026-10-18-note_imported_necdb5c83b2be.md` | 【週間まとめ】暮らしを変えるリテール最新トレンド（10/18週） | https://note.com/cool_hyena6987/n/necdb5c83b2be |
+| `2026-10-19-note_imported_n5f3698b032f9.md` | 【コスモス薬品／ファミリーマート／銀座英國屋】店舗体験と収益モデルの再構築が促す現場変革の針路 | https://note.com/cool_hyena6987/n/n5f3698b032f9 |
