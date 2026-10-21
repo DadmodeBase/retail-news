@@ -159,3 +159,4 @@
 | `2026-10-18-note_imported_necdb5c83b2be.md` | 【週間まとめ】暮らしを変えるリテール最新トレンド（10/18週） | https://note.com/cool_hyena6987/n/necdb5c83b2be |
 | `2026-10-19-note_imported_n5f3698b032f9.md` | 【コスモス薬品／ファミリーマート／銀座英國屋】店舗体験と収益モデルの再構築が促す現場変革の針路 | https://note.com/cool_hyena6987/n/n5f3698b032f9 |
 | `2026-10-20-note_imported_n76b4dc986fb8.md` | 【クリエイトSD／明治・ネスレ日本／明星食品】ドミナント調剤網の拡大とサプライチェーンDXが拓く店頭競争力 | https://note.com/cool_hyena6987/n/n76b4dc986fb8 |
+| `2026-10-21-note_imported_n00e5ecb59339.md` | 【ニトリ／カインズ／しまむら】店舗DXと異業種MDが拓く顧客接点革新と実店舗送客の新潮流 | https://note.com/cool_hyena6987/n/n00e5ecb59339 |
