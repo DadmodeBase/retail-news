@@ -162,3 +162,4 @@
 | `2026-10-21-note_imported_n00e5ecb59339.md` | 【ニトリ／カインズ／しまむら】店舗DXと異業種MDが拓く顧客接点革新と実店舗送客の新潮流 | https://note.com/cool_hyena6987/n/n00e5ecb59339 |
 | `2026-10-22-note_imported_n1279ba406912.md` | 【イオン／カインズ／横浜スカイビル】流通再編が生むPB統合・専門商社買収とAI人流分析による売場革新 | https://note.com/cool_hyena6987/n/n1279ba406912 |
 | `2026-10-23-note_imported_n4858537b4cd0.md` | 【スギHD／日立・ケーエスケー／DCM】流通DXと異業種連携が拓く現場起点のリテール構造改革 | https://note.com/cool_hyena6987/n/n4858537b4cd0 |
+| `2026-10-24-note_imported_nf98b63c43f2d.md` | 【トリドールHD／資生堂／イオンネクスト】デジタル技術が加速させる店舗設計・リバースロジスティクス・拠点自動化の最前線 | https://note.com/cool_hyena6987/n/nf98b63c43f2d |
