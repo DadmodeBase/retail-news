@@ -163,3 +163,4 @@
 | `2026-10-22-note_imported_n1279ba406912.md` | 【イオン／カインズ／横浜スカイビル】流通再編が生むPB統合・専門商社買収とAI人流分析による売場革新 | https://note.com/cool_hyena6987/n/n1279ba406912 |
 | `2026-10-23-note_imported_n4858537b4cd0.md` | 【スギHD／日立・ケーエスケー／DCM】流通DXと異業種連携が拓く現場起点のリテール構造改革 | https://note.com/cool_hyena6987/n/n4858537b4cd0 |
 | `2026-10-24-note_imported_nf98b63c43f2d.md` | 【トリドールHD／資生堂／イオンネクスト】デジタル技術が加速させる店舗設計・リバースロジスティクス・拠点自動化の最前線 | https://note.com/cool_hyena6987/n/nf98b63c43f2d |
+| `2026-10-25-note_imported_n0a23a8efbb74.md` | 【週間まとめ】暮らしを変えるリテール最新トレンド（10/25週） | https://note.com/cool_hyena6987/n/n0a23a8efbb74 |
