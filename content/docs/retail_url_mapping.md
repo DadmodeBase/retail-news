@@ -167,3 +167,4 @@
 | `2026-10-26-note_imported_n4fd9efb5f7d4.md` | 【コメリ／パリヤ／第一貨物】ラストワンマイル網強化と地域密着MD・物流コスト転嫁の最前線 | https://note.com/cool_hyena6987/n/n4fd9efb5f7d4 |
 | `2026-10-27-note_imported_n1ead7ad5f308.md` | 【ウエルシア／セブン‐イレブン／キャスティング】現場DXと食品MD強化が拓く店舗マーケティングの新潮流 | https://note.com/cool_hyena6987/n/n1ead7ad5f308 |
 | `2026-10-28-note_imported_nc15394752e76.md` | 【ウエルシア／データ・ワン／伊藤ハム米久HD】ドラッグストアのライフストア化、オフライン購買分析、物流DXがもたらす小売・流通の次世代フィールド戦略 | https://note.com/cool_hyena6987/n/nc15394752e76 |
+| `2026-10-29-note_imported_n23c2afff8538.md` | 【クスリのアオキ／イオン／ヤマト運輸】生鮮強化MDと先端自動化物流が牽引するサプライチェーン構造改革 | https://note.com/cool_hyena6987/n/n23c2afff8538 |
