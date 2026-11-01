@@ -170,3 +170,4 @@
 | `2026-10-29-note_imported_n23c2afff8538.md` | 【クスリのアオキ／イオン／ヤマト運輸】生鮮強化MDと先端自動化物流が牽引するサプライチェーン構造改革 | https://note.com/cool_hyena6987/n/n23c2afff8538 |
 | `2026-10-30-note_imported_nc39bb9a22f49.md` | 【イオン／コメリ／ツルハ・コスモス薬品】次世代物流DXとPB高収益化、ドラッグストア月次動向に見る店頭競争力の再構築 | https://note.com/cool_hyena6987/n/nc39bb9a22f49 |
 | `2026-10-31-note_imported_n8d1ddfe63b76.md` | 【ゲンキー／アルビス／流通経済研究所】コスト高騰と商慣習改革が迫る流通現場の利益防衛と店頭MD変革 | https://note.com/cool_hyena6987/n/n8d1ddfe63b76 |
+| `2026-11-01-note_imported_nca32f23e9718.md` | 【週間まとめ】暮らしを変えるリテール最新トレンド（11/01週） | https://note.com/cool_hyena6987/n/nca32f23e9718 |
