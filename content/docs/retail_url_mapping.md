@@ -173,3 +173,4 @@
 | `2026-11-01-note_imported_nca32f23e9718.md` | 【週間まとめ】暮らしを変えるリテール最新トレンド（11/01週） | https://note.com/cool_hyena6987/n/nca32f23e9718 |
 | `2026-11-02-note_imported_n7c4d2f088a2f.md` | 【イオン／アサヒビール／ZOZO】物流DXと高付加価値MD・AI購買体験が牽引する流通革新 | https://note.com/cool_hyena6987/n/n7c4d2f088a2f |
 | `2026-11-03-note_imported_n0ba4e852df1d.md` | 【JINS／ローソン／家電SC協議会】店頭DX・協業MD・物流最適化が促す店舗現場の抜本改革 | https://note.com/cool_hyena6987/n/n0ba4e852df1d |
+| `2026-11-04-note_imported_n8ab82f85475a.md` | 【トラスコ中山／ジュンテンドー／リテールパートナーズ】物流DX・地域協業・垂直M&Aに見る流通構造改革とフィールド戦略 | https://note.com/cool_hyena6987/n/n8ab82f85475a |
