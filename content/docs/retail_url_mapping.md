@@ -176,3 +176,4 @@
 | `2026-11-04-note_imported_n8ab82f85475a.md` | 【トラスコ中山／ジュンテンドー／リテールパートナーズ】物流DX・地域協業・垂直M&Aに見る流通構造改革とフィールド戦略 | https://note.com/cool_hyena6987/n/n8ab82f85475a |
 | `2026-11-05-note_imported_n6f8128d82921.md` | 【マツキヨココカラ／イオンリテール／日本郵便・セイノー】小売・物流の構造改革最前線：低食品比率の独自の戦略とグループ再編・物流共同化 | https://note.com/cool_hyena6987/n/n6f8128d82921 |
 | `2026-11-06-note_imported_n18aa26c096b8.md` | 【シノプス・ぎゅーとら／JPR／OneStream】店舗オペレーションと物流を革新する現場DXと標準化の最前線 | https://note.com/cool_hyena6987/n/n18aa26c096b8 |
+| `2026-11-07-note_imported_n194f35c99f4d.md` | 【薬王堂／ヤオコー／JR貨物】リテールDXとモーダルシフトが拓く現場起点マーケティングの新局面 | https://note.com/cool_hyena6987/n/n194f35c99f4d |
