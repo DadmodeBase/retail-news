@@ -178,3 +178,4 @@
 | `2026-11-06-note_imported_n18aa26c096b8.md` | 【シノプス・ぎゅーとら／JPR／OneStream】店舗オペレーションと物流を革新する現場DXと標準化の最前線 | https://note.com/cool_hyena6987/n/n18aa26c096b8 |
 | `2026-11-07-note_imported_n194f35c99f4d.md` | 【薬王堂／ヤオコー／JR貨物】リテールDXとモーダルシフトが拓く現場起点マーケティングの新局面 | https://note.com/cool_hyena6987/n/n194f35c99f4d |
 | `2026-11-08-note_imported_n194cad2750f6.md` | 【週間まとめ】暮らしを変えるリテール最新トレンド（11/08週） | https://note.com/cool_hyena6987/n/n194cad2750f6 |
+| `2026-11-09-note_imported_na9735a948565.md` | 【イオンリテール／ヤマダデンキ／ミスターマックス】小売各社が進める業態再編と店頭オペレーション革新 | https://note.com/cool_hyena6987/n/na9735a948565 |
