@@ -182,3 +182,4 @@
 | `2026-11-10-note_imported_ndd1cf8b2ee2d.md` | 【マツキヨ／ギークプラス／セリア】高付加価値PB開発・物流DX・価格戦略が示す現場マーケティングの課題と展望 | https://note.com/cool_hyena6987/n/ndd1cf8b2ee2d |
 | `2026-11-11-note_imported_n27c82aa4c503.md` | 【セブン／コメリ／ウエルシアHD】低価格PB戦略・農業サプライチェーン統合・店頭ESG推進から読み解く流通新潮流 | https://note.com/cool_hyena6987/n/n27c82aa4c503 |
 | `2026-11-12-note_imported_ne57040c5cc08.md` | 【ライフ／福山通運／ドン・キホーテ】広域M&A・物流DX・共創MDが牽引する店頭変革 | https://note.com/cool_hyena6987/n/ne57040c5cc08 |
+| `2026-11-13-note_imported_n6ac413f57b77.md` | 【ライフ／トライアルHD／PPIH】再編・M&A加速とPB相互供給がもたらす店頭MD・フィールドマーケティングの新潮流 | https://note.com/cool_hyena6987/n/n6ac413f57b77 |
