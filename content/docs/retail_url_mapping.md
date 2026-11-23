@@ -184,3 +184,4 @@
 | `2026-11-12-note_imported_ne57040c5cc08.md` | 【ライフ／福山通運／ドン・キホーテ】広域M&A・物流DX・共創MDが牽引する店頭変革 | https://note.com/cool_hyena6987/n/ne57040c5cc08 |
 | `2026-11-13-note_imported_n6ac413f57b77.md` | 【ライフ／トライアルHD／PPIH】再編・M&A加速とPB相互供給がもたらす店頭MD・フィールドマーケティングの新潮流 | https://note.com/cool_hyena6987/n/n6ac413f57b77 |
 | `2026-11-14-note_imported_n0595fbfe9333.md` | 【サンドラッグ／PPIH／東急ストア】既存店改装と食品強化、体験型リテールメディア、現場AI実装が拓く店頭革新 | https://note.com/cool_hyena6987/n/n0595fbfe9333 |
+| `2026-11-23-note_imported_n1dee580a8fe8.md` | 【クリエイトSD／ローソン／霞ヶ関キャピタル】調剤併設強化とラストワンマイル連携、物流DXがもたらすフィールドマーケティングの新展開 | https://note.com/cool_hyena6987/n/n1dee580a8fe8 |
