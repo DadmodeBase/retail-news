@@ -218,6 +218,15 @@ def _norm_entity_key(text):
     return re.sub(r"[\W_]", "", t)
 
 
+def _entity_alias_key(text):
+    """法人格・HD表記ゆれ（例: クリエイトSD と クリエイトSDホールディングス）を同一視するキー"""
+    key = _norm_entity_key(text)
+    for suffix in ("ホールディングス", "HOLDINGS", "HD", "株式会社", "株"):
+        if key.endswith(suffix) and len(key) > len(suffix):
+            key = key[:-len(suffix)]
+    return key
+
+
 def _clean_entity_name(name):
     c = re.sub(r"[#＃!！?？,，.。:：;；\[\]【】]", "", (name or "").strip())
     return c.strip()
@@ -254,7 +263,7 @@ def build_note_tags(article_title, body_text="", target_entities=None):
     2. 記事の対象となる企業名・サービス名のみ（一般語やフォールバックでの穴埋めはしない）
     """
     must_tags = [t for t in config.NOTE_MUST_TAGS if t]
-    seen_norm = {_norm_entity_key(t) for t in must_tags}
+    seen_norm = {_entity_alias_key(t) for t in must_tags}
     entities = []
 
     def _add_entity(raw_name):
@@ -263,7 +272,7 @@ def build_note_tags(article_title, body_text="", target_entities=None):
             return
         if any(k in c for k in _HEADING_IGNORE_WORDS):
             return
-        key = _norm_entity_key(c)
+        key = _entity_alias_key(c)
         if key and key not in seen_norm:
             seen_norm.add(key)
             entities.append(c)
