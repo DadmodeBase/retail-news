@@ -18,6 +18,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 import feedparser
+import requests
 
 import config
 
@@ -107,22 +108,22 @@ def save_history(service, history, file_id):
 # ---------------------------------------------------------------------------
 def git_pull():
     if config.IS_GITHUB_ACTIONS:
-        subprocess.run(["git", "pull", "--rebase", "origin", "main"], check=False, capture_output=True)
+        subprocess.run(["git", "pull", "--rebase", "origin", "main"], check=False, capture_output=True, timeout=60)
 
 
 def git_commit_and_push(paths, message):
     if not config.IS_GITHUB_ACTIONS:
         return
     try:
-        subprocess.run(["git", "config", "--local", "user.email", "actions@github.com"], check=True)
-        subprocess.run(["git", "config", "--local", "user.name", "github-actions[bot]"], check=True)
-        subprocess.run(["git", "add", *paths], check=False)
-        if subprocess.run(["git", "diff", "--cached", "--quiet"]).returncode == 0:
+        subprocess.run(["git", "config", "--local", "user.email", "actions@github.com"], check=True, timeout=30)
+        subprocess.run(["git", "config", "--local", "user.name", "github-actions[bot]"], check=True, timeout=30)
+        subprocess.run(["git", "add", *paths], check=False, timeout=30)
+        if subprocess.run(["git", "diff", "--cached", "--quiet"], timeout=30).returncode == 0:
             print("コミット対象の変更がないためスキップしました。")
             return
-        subprocess.run(["git", "commit", "-m", f"{message} [skip ci]"], check=True)
-        subprocess.run(["git", "pull", "--rebase", "origin", "main"], check=False)
-        subprocess.run(["git", "push"], check=True)
+        subprocess.run(["git", "commit", "-m", f"{message} [skip ci]"], check=True, timeout=60)
+        subprocess.run(["git", "pull", "--rebase", "origin", "main"], check=False, timeout=60)
+        subprocess.run(["git", "push"], check=True, timeout=60)
         print(f"Gitへ保存しました: {message}")
     except Exception as e:
         print(f"[警告] Gitへの保存に失敗しました: {e}")
@@ -147,7 +148,9 @@ def sync_note_articles():
                     registered.add(parts[3])
 
     try:
-        feed = feedparser.parse(config.NOTE_RSS_URL)
+        resp = requests.get(config.NOTE_RSS_URL, timeout=15)
+        resp.raise_for_status()
+        feed = feedparser.parse(resp.content)
         prefix = f"https://note.com/{config.NOTE_USER}"
         new_entries = [e for e in feed.entries if e.link.startswith(prefix) and e.link not in registered]
         if not new_entries:

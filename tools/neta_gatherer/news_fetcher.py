@@ -77,9 +77,10 @@ def _parse_feed(url):
         resp = requests.get(url, headers={"User-Agent": _UA}, verify=False, timeout=15)
         if resp.status_code == 200:
             return feedparser.parse(resp.content)
-    except Exception:
-        pass
-    return feedparser.parse(url)
+        print(f"[警告] フィード取得でHTTP {resp.status_code} が返りました: {url}")
+    except Exception as e:
+        print(f"[警告] フィード取得に失敗しました ({url}): {e}")
+    return feedparser.parse(b"")
 
 
 def _entry_date_jst(entry):

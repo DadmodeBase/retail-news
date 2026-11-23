@@ -46,12 +46,17 @@ HISTORY_FILENAME = "processed_history.json"
 # Gemini
 # ---------------------------------------------------------------------------
 GEMINI_MODELS = [
-    "gemini-3.8-flash",      # メイン
-    "gemini-3.7-flash",      # サブ1
-    "gemini-3.6-flash",      # サブ2
-    "gemini-3.5-flash",      # サブ3
-    "gemini-flash-latest",   # サブ4：常に最新安定版を指す公式エイリアス
+    "gemini-3.8-flash",          # メイン
+    "gemini-3.7-flash",          # サブ1
+    "gemini-3.6-flash",          # サブ2
+    "gemini-3.5-flash",          # サブ3
+    "gemini-3-flash-preview",    # サブ4
+    "gemini-3.5-flash-lite",     # サブ5
+    "gemini-3.1-flash-lite",     # サブ6
+    "gemini-flash-latest",       # サブ7：常に最新安定版を指す公式エイリアス
+    "gemini-flash-lite-latest",  # サブ8：軽量版公式エイリアス
 ]
+GEMINI_HTTP_TIMEOUT_MS = 45000
 
 # ---------------------------------------------------------------------------
 # note

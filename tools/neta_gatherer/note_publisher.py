@@ -11,6 +11,8 @@ Playwright で note に記事を投稿し、ハッシュタグ・マガジンを
 
 import json
 import os
+import sys
+sys.dont_write_bytecode = True
 import re
 import time
 import unicodedata
@@ -36,21 +38,62 @@ def norm_tag(tag):
     return re.sub(r"[\W_]", "", t)
 
 
+def _normalize_cookies(cookies):
+    """クライアント側期限切れ判定による破棄を防ぐため、期限を未来日時に延長する"""
+    if not isinstance(cookies, list):
+        return cookies
+    target_exp = int(time.time()) + 86400 * 90
+    normalized = []
+    for c in cookies:
+        if not isinstance(c, dict):
+            continue
+        item = dict(c)
+        exp = item.get("expires")
+        if isinstance(exp, (int, float)) and exp > 0 and exp < target_exp:
+            item["expires"] = target_exp
+        normalized.append(item)
+    return normalized
+
+
 def load_cookies():
     """環境変数 NOTE_SESSION_COOKIES 優先、なければ config/note_cookies.json"""
     env = os.getenv("NOTE_SESSION_COOKIES")
     if env:
         try:
-            return json.loads(env)
+            return _normalize_cookies(json.loads(env))
         except Exception as e:
             print(f"[警告] NOTE_SESSION_COOKIES のパースに失敗しました: {e}")
     if os.path.exists(config.NOTE_COOKIE_PATH):
         try:
             with open(config.NOTE_COOKIE_PATH, "r", encoding="utf-8") as f:
-                return json.load(f)
+                return _normalize_cookies(json.load(f))
         except Exception as e:
             print(f"[警告] Cookieファイルの読み込みに失敗しました: {e}")
     return None
+
+
+def _cleanup_old_logs(max_files=6, max_age_days=7):
+    """logs/ 内の古いデバッグファイルを削除し、最新数回分のみを保持する"""
+    try:
+        if not os.path.isdir(config.LOGS_DIR):
+            return
+        now = time.time()
+        cutoff = now - max_age_days * 86400
+        files = []
+        for name in os.listdir(config.LOGS_DIR):
+            path = os.path.join(config.LOGS_DIR, name)
+            if not os.path.isfile(path):
+                continue
+            mtime = os.path.getmtime(path)
+            if mtime < cutoff:
+                os.remove(path)
+            else:
+                files.append((mtime, path))
+        files.sort(key=lambda item: item[0], reverse=True)
+        for _, path in files[max_files:]:
+            os.remove(path)
+    except Exception:
+        pass
 
 
 def _save_debug(page, label):
@@ -62,6 +105,7 @@ def _save_debug(page, label):
         with open(base + ".html", "w", encoding="utf-8") as f:
             f.write(page.content())
         print(f"   [デバッグ] 画面を保存しました: {base}.png")
+        _cleanup_old_logs()
     except Exception:
         pass
 
@@ -90,10 +134,21 @@ def _open_new_editor(page):
         page.goto("https://editor.note.com/new", wait_until="load", timeout=60000)
     except Exception:
         page.goto("https://note.com/notes/new", wait_until="load", timeout=60000)
-    try:
-        page.wait_for_url(_EDITOR_URL_RE, timeout=20000)
-    except Exception:
-        pass
+
+    title_sel = 'textarea[placeholder*="記事タイトル"], [data-placeholder*="記事タイトル"]'
+    deadline = time.time() + 20
+    while time.time() < deadline:
+        if "/login" in page.url:
+            raise PermissionError("セッションCookieの有効期限が切れています。login_note_local.py で再ログインしてください。")
+        if re.search(r"/notes/n[0-9a-z]+/edit", page.url):
+            break
+        try:
+            if page.locator(title_sel).first.is_visible():
+                break
+        except Exception:
+            pass
+        page.wait_for_timeout(1000)
+
     if "/login" in page.url:
         raise PermissionError("セッションCookieの有効期限が切れています。login_note_local.py で再ログインしてください。")
     _close_modal(page)

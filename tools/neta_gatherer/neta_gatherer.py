@@ -16,8 +16,16 @@ neta_gatherer.py
 
 import datetime
 import os
+import socket
 import sys
+sys.dont_write_bytecode = True
 import traceback
+
+socket.setdefaulttimeout(30)
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", line_buffering=True)
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", line_buffering=True)
 
 import config
 import content_generator
@@ -170,6 +178,13 @@ def main():
         except Exception as e:
             print(f"[エラー] メール送信に失敗しました: {e}")
             traceback.print_exc()
+
+        # 一時コピーしたヘッダー画像を削除して content/reports/ の肥大化を防ぐ
+        if header_path and os.path.exists(header_path):
+            try:
+                os.remove(header_path)
+            except Exception as e:
+                print(f"[注意] 一時ヘッダー画像の削除をスキップしました: {e}")
 
         print("[OK] すべての工程が正常に完了しました。")
 

@@ -16,43 +16,65 @@ from google.genai import types
 import config
 
 _client = None
+_preferred_model = None
+
+
+def _http_options():
+    return types.HttpOptions(
+        timeout=getattr(config, "GEMINI_HTTP_TIMEOUT_MS", 45000),
+        retry_options=types.HttpRetryOptions(attempts=1),
+    )
 
 
 def _get_client():
     global _client
     if _client is None:
-        _client = genai.Client(api_key=config.GEMINI_API_KEY)
+        _client = genai.Client(api_key=config.GEMINI_API_KEY, http_options=_http_options())
     return _client
 
 
-def _generate(contents, json_mode=False, max_retries_per_model=3, delay=3):
+def _generate(contents, json_mode=False, max_retries_per_model=2, delay=2):
     """過負荷時はリトライし、ダメなら次の候補モデルへ自動フォールバックする。"""
+    global _preferred_model
     client = _get_client()
-    cfg = types.GenerateContentConfig(response_mime_type="application/json") if json_mode else None
+    http_opts = _http_options()
+    if json_mode:
+        cfg = types.GenerateContentConfig(response_mime_type="application/json", http_options=http_opts)
+    else:
+        cfg = types.GenerateContentConfig(http_options=http_opts)
     last_exc = None
 
-    for model in config.GEMINI_MODELS:
+    models = list(config.GEMINI_MODELS)
+    if _preferred_model and _preferred_model in models:
+        models = [_preferred_model] + [m for m in models if m != _preferred_model]
+
+    for model in models:
         print(f"Gemini API 呼び出し中 (モデル: {model})...")
         for attempt in range(max_retries_per_model):
             try:
-                if cfg:
-                    return client.models.generate_content(model=model, contents=contents, config=cfg)
-                return client.models.generate_content(model=model, contents=contents)
+                resp = client.models.generate_content(model=model, contents=contents, config=cfg)
+                _preferred_model = model
+                return resp
             except Exception as e:
                 last_exc = e
                 msg = str(e).upper()
                 if any(k in msg for k in ["404", "NOT_FOUND", "NOT FOUND", "UNKNOWN MODEL"]):
                     print(f"[注意] モデル「{model}」は利用できません。次の候補へ切り替えます。")
                     break
-                temporary = any(k in msg for k in ["503", "429", "UNAVAILABLE", "RESOURCE_EXHAUSTED",
-                                                    "HIGH DEMAND", "TEMPORARY", "LIMIT"])
+                if any(k in msg for k in ["429", "RESOURCE_EXHAUSTED", "QUOTA"]):
+                    print(f"[注意] モデル「{model}」はクォータ制限に達しました。次の候補へ切り替えます。")
+                    break
+                if any(k in msg for k in ["504", "DEADLINE_EXCEEDED", "TIMEOUT", "TIMED OUT"]):
+                    print(f"[注意] モデル「{model}」がタイムアウトしました。次の候補へ切り替えます。")
+                    break
+                temporary = any(k in msg for k in ["503", "UNAVAILABLE", "HIGH DEMAND", "TEMPORARY"])
                 if temporary and attempt < max_retries_per_model - 1:
                     wait = delay * (2 ** attempt)
                     print(f"[警告] {model} が高負荷です。{wait}秒後に再試行します ({attempt + 1}/{max_retries_per_model})")
                     time.sleep(wait)
                     continue
                 print(f"[警告] {model} のリクエストに失敗しました: {e}")
-                time.sleep(2)
+                time.sleep(1)
                 break
     raise last_exc or RuntimeError("Gemini API の呼び出しに失敗しました")
 
