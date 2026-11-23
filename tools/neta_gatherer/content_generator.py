@@ -9,6 +9,7 @@ import os
 import random
 import re
 import time
+import unicodedata
 
 from google import genai
 from google.genai import types
@@ -80,7 +81,7 @@ def _generate(contents, json_mode=False, max_retries_per_model=2, delay=2):
 
 
 def _parse_report_json(text):
-    """{"article_title", "daily_report"} を取り出し、本文先頭の重複タイトルを除去する"""
+    """{"article_title", "daily_report", "target_entities"} を取り出し、重複タイトルを除去する"""
     try:
         data = json.loads(re.search(r"\{.*\}", text, re.DOTALL).group())
     except Exception as e:
@@ -92,7 +93,13 @@ def _parse_report_json(text):
         return None
     if body.startswith(title):
         body = body[len(title):].strip()
-    return {"article_title": title, "daily_report": body}
+    raw_entities = data.get("target_entities")
+    entities = []
+    if isinstance(raw_entities, list):
+        for item in raw_entities:
+            if isinstance(item, str) and item.strip():
+                entities.append(item.strip())
+    return {"article_title": title, "daily_report": body, "target_entities": entities}
 
 
 # ---------------------------------------------------------------------------
@@ -114,7 +121,8 @@ def generate_daily_report(articles):
 {context}
 
 【アウトプット構成ルール】
-- `article_title`: トピックで取り上げた企業名を【】で囲んで冒頭に付けた魅力的な記事タイトル（例: 【イオン／ファミマ／コープ】...）
+- `article_title`: トピックで取り上げた対象企業名・サービス名のみを【】で囲み、`／` 区切りで冒頭に付けた魅力的な記事タイトル（例: 【イオン／ファミマ／コープ】...）
+- `target_entities`: 記事の主な対象となる具体的な企業名・サービス名のみのリスト（業態名や「ドラッグストア」「物流DX」等の一般名詞は含めない）
 - `daily_report`: 記事本文（※記事タイトルは本文冒頭に含めず、全体概要から書き始めてください）
 
 【本文（daily_report）の構成】
@@ -134,7 +142,8 @@ def generate_daily_report(articles):
 
 出力は以下のJSON形式でお願いします。
 {{
-  "article_title": "タイトル（企業名を【】で囲む）",
+  "article_title": "タイトル（対象企業名・サービス名を【】で囲む）",
+  "target_entities": ["企業名・サービス名1", "企業名・サービス名2", "企業名・サービス名3"],
   "daily_report": "全体概要から始まるレポート本文全文（### 小見出しを使用）"
 }}
 """
@@ -191,61 +200,98 @@ def generate_weekly_summary(now_jst):
 # ---------------------------------------------------------------------------
 # noteハッシュタグ
 # ---------------------------------------------------------------------------
-def build_note_tags(article_title, body_text=""):
+_PROTECTED_MIDDOT_NAMES = [
+    "ドン・キホーテ",
+    "セブン・イレブン",
+    "セブン‐イレブン",
+    "ロビン・フッド",
+    "V・ドラッグ",
+    "セキミキ・グループ",
+    "ザ・ビッグ",
+    "ミスター・マックス",
+]
+_HEADING_IGNORE_WORDS = ("日刊", "週間まとめ", "テスト")
+
+
+def _norm_entity_key(text):
+    t = unicodedata.normalize("NFKC", text or "").lstrip("#").upper()
+    return re.sub(r"[\W_]", "", t)
+
+
+def _clean_entity_name(name):
+    c = re.sub(r"[#＃!！?？,，.。:：;；\[\]【】]", "", (name or "").strip())
+    return c.strip()
+
+
+def _split_entity_text(raw):
+    text = (raw or "").strip()
+    if not text:
+        return []
+    if "/" in text or "／" in text:
+        parts = re.split(r"[/／、,，&＆]+", text)
+    else:
+        placeholders = {}
+        protected = text
+        for idx, name in enumerate(_PROTECTED_MIDDOT_NAMES):
+            if name in protected:
+                token = f"__MIDDOT_{idx}__"
+                protected = protected.replace(name, token)
+                placeholders[token] = name
+        parts = re.split(r"[/／、・,，\s&＆]+", protected)
+        restored = []
+        for p in parts:
+            for tok, orig in placeholders.items():
+                p = p.replace(tok, orig)
+            restored.append(p)
+        parts = restored
+    return [c for c in (_clean_entity_name(p) for p in parts) if c and len(c) <= 20]
+
+
+def build_note_tags(article_title, body_text="", target_entities=None):
     """
-    note用ハッシュタグ（最大 NOTE_TAG_LIMIT 個 = 7個）を生成する。
-    1. 「フィールドマーケティング」（最優先・必須）
-    2. タイトルの【】内の企業名
-    3. その他: 記事本文・タイトルに関連するキーワード
+    note用ハッシュタグ（上限 NOTE_TAG_LIMIT 個 = 7個、下限なし）を生成する。
+    1. 「フィールドマーケティング」（最優先・固定必須）
+    2. 記事の対象となる企業名・サービス名のみ（一般語やフォールバックでの穴埋めはしない）
     """
-    # 1. 必須タグ: フィールドマーケティング（最優先）
     must_tags = [t for t in config.NOTE_MUST_TAGS if t]
+    seen_norm = {_norm_entity_key(t) for t in must_tags}
+    entities = []
 
-    # 2. タイトルから企業名を抽出
-    company_tags = []
-    m = re.search(r"【(.*?)】", article_title)
-    if m and not any(k in m.group(1) for k in ["日刊", "週間まとめ", "テスト"]):
-        for c in re.split(r"[/／、・,，\s&＆]+", m.group(1)):
-            c = re.sub(r"[#＃!！?？,，.。:：;；]", "", c.strip())
-            if c and len(c) <= 20:
-                company_tags.append(c)
+    def _add_entity(raw_name):
+        c = _clean_entity_name(raw_name)
+        if not c or len(c) > 20:
+            return
+        if any(k in c for k in _HEADING_IGNORE_WORDS):
+            return
+        key = _norm_entity_key(c)
+        if key and key not in seen_norm:
+            seen_norm.add(key)
+            entities.append(c)
 
-    # 重複排除
-    company_tags = list(dict.fromkeys(company_tags))
+    # 1. タイトルの【】から企業名・サービス名を抽出
+    title_m = re.search(r"【(.*?)】", article_title or "")
+    if title_m and not any(k in title_m.group(1) for k in _HEADING_IGNORE_WORDS):
+        for item in _split_entity_text(title_m.group(1)):
+            _add_entity(item)
 
-    # 基本タグ（フィールドマーケティング最優先 + 企業名）
-    # ※並び順: フィールドマーケティング -> 企業名
-    base_tags = list(dict.fromkeys(must_tags + company_tags))
+    # 2. target_entities（Geminiが構造化出力した対象企業名・サービス名）を追加
+    if isinstance(target_entities, list):
+        for item in target_entities:
+            if isinstance(item, str):
+                for sub in _split_entity_text(item):
+                    _add_entity(sub)
+    elif isinstance(target_entities, str):
+        for sub in _split_entity_text(target_entities):
+            _add_entity(sub)
 
-    # 万が一、必須タグ+企業名だけで上限（7個）を超える場合は上限でクリップ
-    if len(base_tags) >= config.NOTE_TAG_LIMIT:
-        return base_tags[:config.NOTE_TAG_LIMIT]
+    # 3. タイトル・target_entities から取れなかった場合のみ、本文の ### 【...】 小見出しから補完
+    if not entities and body_text:
+        for bm in re.finditer(r"^###\s+【(.*?)】", body_text, re.MULTILINE):
+            if not any(k in bm.group(1) for k in _HEADING_IGNORE_WORDS):
+                for item in _split_entity_text(bm.group(1)):
+                    _add_entity(item)
 
-    # 残り枠数
-    remaining_slots = config.NOTE_TAG_LIMIT - len(base_tags)
-
-    # 3. 記事本文・タイトルから関連キーワードを抽出
-    search_text = f"{article_title}\n{body_text or ''}"
-    relevant_tags = []
-    for kw in getattr(config, "NOTE_RELEVANT_KEYWORDS", []):
-        if kw in base_tags or kw in relevant_tags:
-            continue
-        if kw in search_text:
-            relevant_tags.append(kw)
-            if len(relevant_tags) >= remaining_slots:
-                break
-
-    # それでも枠が余る場合はフォールバックリストから補完
-    if len(relevant_tags) < remaining_slots:
-        fallback_list = getattr(config, "NOTE_FALLBACK_TAGS", getattr(config, "NOTE_BASE_TAGS", []))
-        for fb in fallback_list:
-            if fb in base_tags or fb in relevant_tags:
-                continue
-            relevant_tags.append(fb)
-            if len(relevant_tags) >= remaining_slots:
-                break
-
-    return (base_tags + relevant_tags)[:config.NOTE_TAG_LIMIT]
+    return (must_tags + entities)[:config.NOTE_TAG_LIMIT]
 
 
 # ---------------------------------------------------------------------------

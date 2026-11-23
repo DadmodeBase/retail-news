@@ -223,20 +223,14 @@ _JS_REGISTERED_TAGS = """
 () => {
   const input = document.querySelector('input[aria-owns="hashtag-search-result"]')
              || document.querySelector('input[placeholder*="ハッシュタグ"]');
-  if (!input) return null;
+  if (!input || !input.parentElement) return null;
   const list = document.getElementById('hashtag-search-result');
   const pick = (root) => [...root.querySelectorAll('button')]
       .filter(b => !(list && list.contains(b)) && !b.querySelector('img'))
+      .filter(b => b.querySelector('[aria-label="削除"], svg'))
       .map(b => (b.textContent || '').trim())
       .filter(t => /^#\\S+$/.test(t) && t.length <= 40);
-  // 入力欄 → ラッパー → タグ一覧を含むコンテナ（2階層上）
-  const box = input.parentElement && input.parentElement.parentElement;
-  let tags = box ? pick(box) : [];
-  if (tags.length === 0) {
-    const sec = input.closest('section');
-    if (sec) tags = pick(sec);
-  }
-  return [...new Set(tags)];
+  return [...new Set(pick(input.parentElement))];
 }
 """
 
@@ -306,13 +300,34 @@ def _add_tag(page, tag):
     return _is_registered(page, tag)
 
 
+_JS_REMOVE_REGISTERED_TAG = """
+(tagText) => {
+  const input = document.querySelector('input[aria-owns="hashtag-search-result"]')
+             || document.querySelector('input[placeholder*="ハッシュタグ"]');
+  if (!input || !input.parentElement) return false;
+  const norm = s => (s || '').normalize('NFKC').replace(/^#/, '').replace(/[\\W_]/g, '').toUpperCase();
+  const target = norm(tagText);
+  const btns = [...input.parentElement.querySelectorAll('button')]
+      .filter(b => b.querySelector('[aria-label="削除"], svg'));
+  for (const b of btns) {
+    const t = (b.textContent || '').trim();
+    if (t === tagText || norm(t) === target) {
+      b.click();
+      return true;
+    }
+  }
+  return false;
+}
+"""
+
+
 def _remove_extra_tag(page, tag_text):
-    """note側の自動提案タグを外して枠を空ける（タグ上限対策）"""
+    """登録済みタグ欄内の不要・順序違いタグを外す"""
     try:
-        btn = page.locator("button").filter(has_text=re.compile(rf"^{re.escape(tag_text)}$")).first
-        btn.click()
+        if not page.evaluate(_JS_REMOVE_REGISTERED_TAG, tag_text):
+            return False
         page.wait_for_timeout(700)
-        return tag_text not in _registered_tags(page)
+        return not _is_registered(page, tag_text)
     except Exception:
         return False
 
@@ -330,24 +345,33 @@ def apply_tags(page, tags):
         print(f"   [NG] ハッシュタグ入力欄が見つかりません: {e}")
         return list(tags)
 
-    wanted = {norm_tag(t) for t in tags}
+    clean_tags = [t.lstrip("#").strip() for t in tags if t and t.lstrip("#").strip()]
+    wanted = {norm_tag(t) for t in clean_tags}
     before = _registered_tags(page)
     if before:
         print(f"   既に登録されているタグ: {before}")
+        need_reset_order = bool(clean_tags) and norm_tag(before[0]) != norm_tag(clean_tags[0])
+        if need_reset_order:
+            print(f"   [調整] 最優先タグ #{clean_tags[0]} を先頭に配置するため既存タグを整理します")
+            for existing in list(before):
+                if _remove_extra_tag(page, existing):
+                    print(f"   [削除] 既存タグ {existing} を外しました")
+        else:
+            for existing in list(before):
+                if norm_tag(existing) not in wanted:
+                    if _remove_extra_tag(page, existing):
+                        print(f"   [削除] 不要タグ {existing} を外しました")
 
-    for tag in tags:
-        tag = tag.lstrip("#").strip()
-        if not tag:
-            continue
+    for tag in clean_tags:
         if _is_registered(page, tag):
             print(f"   [OK] #{tag}（登録済み）")
             continue
-        # 上限に達していたら、こちらが指定していない自動提案タグを外す
+        # 上限に達していたら、こちらが指定していないタグを外す
         current = _registered_tags(page)
         if len(current) >= config.NOTE_TAG_LIMIT:
             extras = [t for t in current if norm_tag(t) not in wanted]
             if extras and _remove_extra_tag(page, extras[-1]):
-                print(f"   [調整] 上限のため自動提案タグ {extras[-1]} を外しました")
+                print(f"   [調整] 上限のため対象外タグ {extras[-1]} を外しました")
         try:
             ok = _add_tag(page, tag)
         except Exception as e:
@@ -358,7 +382,7 @@ def apply_tags(page, tags):
     final = _registered_tags(page)
     print(f"   最終的な登録タグ: {final}")
     registered = {norm_tag(t) for t in final}
-    return [t for t in tags if norm_tag(t) not in registered]
+    return [t for t in clean_tags if norm_tag(t) not in registered]
 
 
 # ---------------------------------------------------------------------------
@@ -629,7 +653,7 @@ def publish_with_verification(title, body_text, header_image_path, tags,
 
     if missing or not mag_ok:
         print(f"   [NG] 不足タグ: {missing} / マガジン反映: {mag_ok} → 自動修復を試みます")
-        repair_note_settings(key, missing or tags, None if mag_ok else magazine_name, headless=headless)
+        repair_note_settings(key, tags, None if mag_ok else magazine_name, headless=headless)
         missing, mag_ok = verify_published(key, tags, magazine_key)
 
     result["missing_tags"] = missing

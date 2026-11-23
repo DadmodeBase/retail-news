@@ -126,7 +126,11 @@ def main():
 
         # 6. note への自動投稿（Cookie設定がある場合のみ）
         note_url = ""
-        tags = content_generator.build_note_tags(article_title, daily_report)
+        tags = content_generator.build_note_tags(
+            article_title,
+            daily_report,
+            target_entities=outputs.get("target_entities"),
+        )
         print(f"設定対象ハッシュタグ: {tags}")
         print(f"設定対象マガジン: {config.NOTE_MAGAZINE_NAME}")
 
