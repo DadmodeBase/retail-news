@@ -185,3 +185,4 @@
 | `2026-11-13-note_imported_n6ac413f57b77.md` | 【ライフ／トライアルHD／PPIH】再編・M&A加速とPB相互供給がもたらす店頭MD・フィールドマーケティングの新潮流 | https://note.com/cool_hyena6987/n/n6ac413f57b77 |
 | `2026-11-14-note_imported_n0595fbfe9333.md` | 【サンドラッグ／PPIH／東急ストア】既存店改装と食品強化、体験型リテールメディア、現場AI実装が拓く店頭革新 | https://note.com/cool_hyena6987/n/n0595fbfe9333 |
 | `2026-11-23-note_imported_n1dee580a8fe8.md` | 【クリエイトSD／ローソン／霞ヶ関キャピタル】調剤併設強化とラストワンマイル連携、物流DXがもたらすフィールドマーケティングの新展開 | https://note.com/cool_hyena6987/n/n1dee580a8fe8 |
+| `2026-11-24-note_imported_naa4efc01cbe3.md` | 【ドンキ・アピタ】PeopleXのAI面接・AIロープレ導入／【PPIH】宣伝担当のAI社員「近藤あい」デビュー／【くら寿司】すし22品値上げ・サイドメニュー34品値下げ | https://note.com/cool_hyena6987/n/naa4efc01cbe3 |
