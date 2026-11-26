@@ -187,3 +187,4 @@
 | `2026-11-23-note_imported_n1dee580a8fe8.md` | 【クリエイトSD／ローソン／霞ヶ関キャピタル】調剤併設強化とラストワンマイル連携、物流DXがもたらすフィールドマーケティングの新展開 | https://note.com/cool_hyena6987/n/n1dee580a8fe8 |
 | `2026-11-24-note_imported_naa4efc01cbe3.md` | 【ドンキ・アピタ】PeopleXのAI面接・AIロープレ導入／【PPIH】宣伝担当のAI社員「近藤あい」デビュー／【くら寿司】すし22品値上げ・サイドメニュー34品値下げ | https://note.com/cool_hyena6987/n/naa4efc01cbe3 |
 | `2026-11-25-note_imported_ndf312db565af.md` | 【日立／東武鉄道／ローソン／日本郵便／ドン・キホーテ／ヨドバシカメラ】顔認証決済、新チャネル開拓、免税改定に対応する現場マーケティング戦略 | https://note.com/cool_hyena6987/n/ndf312db565af |
+| `2026-11-26-note_imported_n50ac36c6e310.md` | 【アカカベ／シャトレーゼ／モノタロウ】現場DXとカテゴリ拡張がもたらす店舗オペレーション革新とフィールドマーケティング戦略 | https://note.com/cool_hyena6987/n/n50ac36c6e310 |
