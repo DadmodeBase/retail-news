@@ -188,3 +188,4 @@
 | `2026-11-24-note_imported_naa4efc01cbe3.md` | 【ドンキ・アピタ】PeopleXのAI面接・AIロープレ導入／【PPIH】宣伝担当のAI社員「近藤あい」デビュー／【くら寿司】すし22品値上げ・サイドメニュー34品値下げ | https://note.com/cool_hyena6987/n/naa4efc01cbe3 |
 | `2026-11-25-note_imported_ndf312db565af.md` | 【日立／東武鉄道／ローソン／日本郵便／ドン・キホーテ／ヨドバシカメラ】顔認証決済、新チャネル開拓、免税改定に対応する現場マーケティング戦略 | https://note.com/cool_hyena6987/n/ndf312db565af |
 | `2026-11-26-note_imported_n50ac36c6e310.md` | 【アカカベ／シャトレーゼ／モノタロウ】現場DXとカテゴリ拡張がもたらす店舗オペレーション革新とフィールドマーケティング戦略 | https://note.com/cool_hyena6987/n/n50ac36c6e310 |
+| `2026-11-27-note_imported_n69344fb0f52d.md` | 【農業総合研究所／吉野家ホールディングス／イオン】サプライチェーン再編・事業集約・CRE戦略に見る次世代店舗マーケティングの最適化 | https://note.com/cool_hyena6987/n/n69344fb0f52d |
